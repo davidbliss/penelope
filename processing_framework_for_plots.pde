@@ -1,13 +1,6 @@
-// TODO: clean up
 // TODO: add 3d box to offscreen canvas
-
-// TODO: add nonshuffling parameters section
-  // add document width and height (inches)
-  // add margin (inches)
-  // add the number lines each segment is broken into
   
 // TODO: figure out an approach to layers (colors/width)
-
 
 import processing.svg.*;
 
@@ -26,6 +19,8 @@ OffscreenCanvas preview;
 int canvasWidth;
 int canvasHeight;
 
+int offscreenCanvasMargin;
+
 void setup() {
   size(1400,800,P3D); // 1400,800 fits well on my laptop
   background(25);
@@ -33,10 +28,17 @@ void setup() {
   parameters = new Parameters(this);
   controls = new Controls(this);
   
+  init();
+}
+
+void init(){
+  // things that may change when controls are updated
+  float scaleAdjust = 71.95;
+  
   // calculate the height and width of the offscreen bits.
-  float scaleAdjust = 71.95; // convert from inches of paper to SVG scaled properly for plotter software
-  int offscreenCanvasWidth = int(18*scaleAdjust);
-  int offscreenCanvasHeight = int(24*scaleAdjust);
+  int offscreenCanvasWidth = int(controls.cp5.getController("pageWidth").getValue() * scaleAdjust);
+  int offscreenCanvasHeight = int(controls.cp5.getController("pageHeight").getValue() * scaleAdjust);
+  offscreenCanvasMargin = int(controls.cp5.getController("margin").getValue() * scaleAdjust);
   
   preview = new OffscreenCanvas(offscreenCanvasWidth, offscreenCanvasHeight);
   
@@ -49,6 +51,7 @@ void setup() {
   }
   canvasWidth = int(preview.graphics.width * scaler);
   canvasHeight = int(preview.graphics.height * scaler);
+  
   
   // initial OffscreenCanvas background is not drawn, so we draw it manually here.
   fill(255);
@@ -128,6 +131,7 @@ void randomizeParameters(){
 
 void regenerate(){
   if(preview!=null) {
+    init();
     preview.clear();
     drawing.init();
     drawOnce();

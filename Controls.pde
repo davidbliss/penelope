@@ -24,6 +24,45 @@ public class Controls {
       .linebreak();
       ;
     yPos+=yOffset;
+    
+    cp5.addSlider("pageWidth")
+      .setLabel("page width (in)")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(8,24)
+      .setValue(18)
+      ;
+    xPos+=xOffset+50;
+
+    cp5.addSlider("pageHeight")
+      .setLabel("page height (in)")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(8,24)
+      .setValue(24)
+      ;
+    xPos+=xOffset+50;
+    
+    cp5.addSlider("margin")
+      .setLabel("margin (in)")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,2)
+      .setValue(1)
+      ;
+    xPos+=xOffset+50;
+    
+    yPos+=yOffset;
+    xPos=xBase;
+    
+    cp5.addSlider("curveFidelity")
+      .setLabel("curve fidelity")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,1)
+      .setValue(.5)
+     ;
+    yPos+=yOffset;
 
     cp5.addButton("frontCam")
       .setLabel("front")

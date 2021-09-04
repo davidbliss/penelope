@@ -5,24 +5,17 @@
 public class OffscreenCanvas {
   PGraphics graphics;
   Boolean isSVG;
-  int margin;
   
   PGraphics offscreen3d;
   
   OffscreenCanvas(int width, int height) {
     graphics = createGraphics(width, height, P3D);
     offscreen3d = createGraphics(width, height, P3D);
-    
-    // TODO: parameterize margin
-    margin = 100;
   }
   
   OffscreenCanvas(PGraphics svg) {
     graphics = svg;
     offscreen3d = createGraphics(svg.width, svg.height, P3D);
-    
-    // TODO: parameterize margin
-    margin = 100;
   }
   
   void clear() {
@@ -59,10 +52,12 @@ public class OffscreenCanvas {
     offscreen3d.endDraw();
   }
   
-  // TODO: you can build out a library of utilities for this here, e.g. draw3dBezier, drawBox, clipLine
+  // start functions for rendering 3d objects to 2d SVG. 
+  
+  // TODO: add drawBox
   
   void draw3dBezier(PVector anchor1, PVector control1, PVector control2, PVector anchor2){
-    int steps = 10;
+    int steps = 2 + int(10 * controls.cp5.getController("curveFidelity").getValue()); // need minimum of 2 segments;
     
     graphics.beginShape();
     
@@ -72,7 +67,6 @@ public class OffscreenCanvas {
     Boolean newCurve = true;
     Boolean firstLineDrawn = false;
     
-      
     for (int s = 0; s <= steps; s++) {
       float t = s / float(steps);
       
@@ -134,15 +128,18 @@ public class OffscreenCanvas {
     graphics.endShape();
   }
   
+  
+  // start line cropping utilities.
+  
   int offscreenPoints(PVector point1, PVector point2){
-    if (    (point1.x >= margin && point1.x <= graphics.width-margin && point1.y >= margin && point1.y <= graphics.height-margin)
-         || (point2.x >= margin && point2.x <= graphics.width-margin && point2.y >= margin && point2.y <= graphics.height-margin) )  {
+    if (    (point1.x >= offscreenCanvasMargin && point1.x <= graphics.width-offscreenCanvasMargin && point1.y >= offscreenCanvasMargin && point1.y <= graphics.height-offscreenCanvasMargin)
+         || (point2.x >= offscreenCanvasMargin && point2.x <= graphics.width-offscreenCanvasMargin && point2.y >= offscreenCanvasMargin && point2.y <= graphics.height-offscreenCanvasMargin) )  {
       // one or both of the two points are inside the margins
       
-      if ((point1.x <= margin && point2.x > margin) || (point2.x <= graphics.width-margin && point1.x > graphics.width-margin)) return 0;
-      if ((point2.x <= margin && point1.x > margin) || (point1.x <= graphics.width-margin && point2.x > graphics.width-margin)) return 1;
-      if ((point1.y <= margin && point2.y > margin) || (point2.y <= graphics.height-margin && point1.y > graphics.height-margin)) return 0;
-      if ((point2.y <= margin && point1.y > margin) || (point1.y <= graphics.height-margin && point2.y > graphics.height-margin)) return 1;
+      if ((point1.x <= offscreenCanvasMargin && point2.x > offscreenCanvasMargin) || (point2.x <= graphics.width-offscreenCanvasMargin && point1.x > graphics.width-offscreenCanvasMargin)) return 0;
+      if ((point2.x <= offscreenCanvasMargin && point1.x > offscreenCanvasMargin) || (point1.x <= graphics.width-offscreenCanvasMargin && point2.x > graphics.width-offscreenCanvasMargin)) return 1;
+      if ((point1.y <= offscreenCanvasMargin && point2.y > offscreenCanvasMargin) || (point2.y <= graphics.height-offscreenCanvasMargin && point1.y > graphics.height-offscreenCanvasMargin)) return 0;
+      if ((point2.y <= offscreenCanvasMargin && point1.y > offscreenCanvasMargin) || (point1.y <= graphics.height-offscreenCanvasMargin && point2.y > graphics.height-offscreenCanvasMargin)) return 1;
             
       return -1;
     } else {
@@ -164,9 +161,9 @@ public class OffscreenCanvas {
     float y2 = point2.y;
     
     // left side of paper 2
-    float x3 = margin;  
+    float x3 = offscreenCanvasMargin;  
     float y3 = 0;
-    float x4 = margin;
+    float x4 = offscreenCanvasMargin;
     float y4 = graphics.height;
     
     float uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
@@ -183,9 +180,9 @@ public class OffscreenCanvas {
     }  
     
     // right side of paper 2
-    x3 = graphics.width-margin;  
+    x3 = graphics.width-offscreenCanvasMargin;  
     y3 = 0;
-    x4 = graphics.width-margin;
+    x4 = graphics.width-offscreenCanvasMargin;
     y4 = graphics.height;
     
     uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
@@ -204,9 +201,9 @@ public class OffscreenCanvas {
     
     // top of paper 2
     x3 = 0;  
-    y3 = margin;
+    y3 = offscreenCanvasMargin;
     x4 = graphics.width;
-    y4 = margin;
+    y4 = offscreenCanvasMargin;
     
     uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
     uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
@@ -224,9 +221,9 @@ public class OffscreenCanvas {
     
     // bottom of paper 2
     x3 = 0;  
-    y3 = graphics.height-margin;
+    y3 = graphics.height-offscreenCanvasMargin;
     x4 = graphics.width;
-    y4 = graphics.height-margin;
+    y4 = graphics.height-offscreenCanvasMargin;
     
     uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
     uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
