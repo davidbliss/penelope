@@ -23,7 +23,7 @@ public class Parameters {
       .setLabel("scale")
       .setPosition(xPos, yPos)
       .setWidth(100)
-      .setRange(.5,1)
+      .setRange(.1,1)
       .setValue(1)
      ;
     yPos+=yOffset;

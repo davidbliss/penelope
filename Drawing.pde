@@ -15,22 +15,7 @@ public class Drawing{
   }
 
   public void init(){
-
-    numCellsX = int(parameters.cp5.getController("numCellsX").getValue());
-    numCellsY = int(parameters.cp5.getController("numCellsY").getValue());
-    numCellsZ = int(parameters.cp5.getController("numCellsZ").getValue());
-
-    cells = new Cell[numCellsX][numCellsY][numCellsZ];
-
-    for (int x = 0; x < numCellsX; x++){
-      for (int y = 0; y < numCellsY; y++){
-        for (int z = 0; z < numCellsZ; z++){
-          cells[x][y][z] = new Cell(this, x, y, z, parameters);
-        }
-      }
-    }
-
-    chains = new ArrayList<ArrayList<Cell>>();
+    
   }
 
   public void draw(OffscreenCanvas canvas){
@@ -94,6 +79,22 @@ public class Drawing{
   }
   
   public void makeChains(){
+    numCellsX = int(parameters.cp5.getController("numCellsX").getValue());
+    numCellsY = int(parameters.cp5.getController("numCellsY").getValue());
+    numCellsZ = int(parameters.cp5.getController("numCellsZ").getValue());
+
+    cells = new Cell[numCellsX][numCellsY][numCellsZ];
+
+    for (int x = 0; x < numCellsX; x++){
+      for (int y = 0; y < numCellsY; y++){
+        for (int z = 0; z < numCellsZ; z++){
+          cells[x][y][z] = new Cell(this, x, y, z, parameters);
+        }
+      }
+    }
+
+    chains = new ArrayList<ArrayList<Cell>>();
+    
     for (int i=0; i<int(parameters.cp5.getController("numberChains").getValue()); i++){
       Cell previous = getRandomCell();
       ArrayList<Cell>chain=new ArrayList<Cell>();
@@ -120,10 +121,7 @@ public class Drawing{
       for (int i = 1; i<chain.size()-1; i++){
         ArrayList<PVector> pvList= chain.get(i).getConnectionVertex(chain.get(i-1), chain.get(i+1));
         canvas.draw3dBezier(pvList.get(0),pvList.get(1),pvList.get(2),pvList.get(3));
-        
       }
-      
-      
     }
   }
 }

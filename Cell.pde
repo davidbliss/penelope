@@ -1,7 +1,7 @@
 public class Cell{
   Parameters parameters;
   Drawing grid;
-  int cellSize = 100;
+  int cellSize = 0;
   int x;
   int y;
   int z;
@@ -15,15 +15,9 @@ public class Cell{
     this.z = z;
   }
 
-  void drawCube(PGraphics graphics){
-    preDraw(graphics);
-    graphics.strokeWeight(3);
-    if (parameters.cp5.getController("drawBoundingBox").getValue()==1)
-      graphics.box(int(parameters.cp5.getController("cellSize").getValue()));
-    postDraw(graphics);
-  }
-
   ArrayList<PVector> getConnectionVertex(Cell from, Cell to){
+    cellSize = int(parameters.cp5.getController("cellSize").getValue());
+    
     int fromDeltaX = -x + from.x;
     int fromDeltaY = -y + from.y;
     int fromDeltaZ = -z + from.z;
@@ -43,17 +37,5 @@ public class Cell{
     results.add(new PVector(offsetX+cellSize/2*toDeltaX,    offsetY+cellSize/2*toDeltaY,    offsetZ+cellSize/2*toDeltaZ));
 
     return results;
-  }
-
-  private void preDraw(PGraphics graphics){
-    graphics.pushMatrix();
-    cellSize = int(parameters.cp5.getController("cellSize").getValue());
-    graphics.translate(-grid.numCellsX/2*cellSize + x*cellSize + cellSize/2,
-                       -grid.numCellsY/2*cellSize + y*cellSize + cellSize/2,
-                       -grid.numCellsZ/2*cellSize + z*cellSize + cellSize/2);
-  }
-
-  private void postDraw(PGraphics graphics){
-    graphics.popMatrix();
   }
 }
