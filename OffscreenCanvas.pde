@@ -4,8 +4,6 @@
 
 public class OffscreenCanvas {
   PGraphics graphics;
-  Boolean isSVG;
-  
   PGraphics offscreen3d;
   
   OffscreenCanvas(int width, int height) {
@@ -54,7 +52,42 @@ public class OffscreenCanvas {
   
   // start functions for rendering 3d objects to 2d SVG. 
   
-  // TODO: add drawBox
+  // TODO: modify to make continuous lines part of one shape
+  void drawBox(float size){
+    // make 8 vertexes to map to 8 2d points
+    PVector p1 = new PVector(-size/2,-size/2,-size/2);
+    PVector p2 = new PVector(size/2,-size/2,-size/2);
+    PVector p3 = new PVector(-size/2,-size/2,size/2);
+    PVector p4 = new PVector(size/2,-size/2,size/2);
+    PVector p5 = new PVector(-size/2,size/2,-size/2);
+    PVector p6 = new PVector(size/2,size/2,-size/2);
+    PVector p7 = new PVector(-size/2,size/2,size/2);
+    PVector p8 = new PVector(size/2,size/2,size/2);
+    
+    PVector p12d = new PVector(offscreen3d.screenX(p1.x,p1.y,p1.z), offscreen3d.screenY(p1.x,p1.y,p1.z));
+    PVector p22d = new PVector(offscreen3d.screenX(p2.x,p2.y,p2.z), offscreen3d.screenY(p2.x,p2.y,p2.z));
+    PVector p32d = new PVector(offscreen3d.screenX(p3.x,p3.y,p3.z), offscreen3d.screenY(p3.x,p3.y,p3.z));
+    PVector p42d = new PVector(offscreen3d.screenX(p4.x,p4.y,p4.z), offscreen3d.screenY(p4.x,p4.y,p4.z));
+    PVector p52d = new PVector(offscreen3d.screenX(p5.x,p5.y,p5.z), offscreen3d.screenY(p5.x,p5.y,p5.z));
+    PVector p62d = new PVector(offscreen3d.screenX(p6.x,p6.y,p6.z), offscreen3d.screenY(p6.x,p6.y,p6.z));
+    PVector p72d = new PVector(offscreen3d.screenX(p7.x,p7.y,p7.z), offscreen3d.screenY(p7.x,p7.y,p7.z));
+    PVector p82d = new PVector(offscreen3d.screenX(p8.x,p8.y,p8.z), offscreen3d.screenY(p8.x,p8.y,p8.z));
+    
+    drawCroppedLine(p12d, p22d);
+    drawCroppedLine(p12d, p32d);
+    drawCroppedLine(p32d, p42d);
+    drawCroppedLine(p42d, p22d);
+    
+    drawCroppedLine(p52d, p62d);
+    drawCroppedLine(p52d, p72d);
+    drawCroppedLine(p72d, p82d);
+    drawCroppedLine(p82d, p62d);
+
+    drawCroppedLine(p12d, p52d);
+    drawCroppedLine(p22d, p62d);
+    drawCroppedLine(p32d, p72d);
+    drawCroppedLine(p42d, p82d);
+  }
   
   void draw3dBezier(PVector anchor1, PVector control1, PVector control2, PVector anchor2){
     int steps = 2 + int(10 * controls.cp5.getController("curveFidelity").getValue()); // need minimum of 2 segments;
@@ -67,6 +100,7 @@ public class OffscreenCanvas {
     Boolean newCurve = true;
     Boolean firstLineDrawn = false;
     
+    // TODO: abstract this to take a list of 2d vertexes and draw them properly with cropping, etc. to be used by anything.
     for (int s = 0; s <= steps; s++) {
       float t = s / float(steps);
       
@@ -82,18 +116,9 @@ public class OffscreenCanvas {
         if(sX != previousX || sY != previousY) {
           // See if crop is needed and to which side
           int offScreenPoints = offscreenPoints(new PVector(previousX, previousY), new PVector(sX, sY));
-          if(offScreenPoints == 3){
-            // ignore this line, both points are out bounds.
-            // TODO: handle lines that are like this since they could cross over the page area.
-            
-            firstLineDrawn = false;
-            previousX = sX;
-            previousY = sY;
-            graphics.endShape();
-            graphics.beginShape();
-          } else {
-            ArrayList<PVector> croppedLine = cropLine(new PVector(previousX, previousY), new PVector(sX, sY));
-            
+
+          ArrayList<PVector> croppedLine = cropLine(new PVector(previousX, previousY), new PVector(sX, sY));
+          if (croppedLine!=null){
             // capture the first vertex if this is s 1
             if(firstLineDrawn == false) {
               graphics.vertex(croppedLine.get(0).x, croppedLine.get(0).y);
@@ -105,9 +130,9 @@ public class OffscreenCanvas {
             previousX = croppedLine.get(1).x;
             previousY = croppedLine.get(1).y;
             
-            if (offScreenPoints == 0){
+            if (offScreenPoints == 1){
               // the first point is offscreen, continue adding vertexes from here
-            } if (offScreenPoints == 1){ 
+            } if (offScreenPoints == 2 || offScreenPoints == 3 ){ 
               // the second point is offscreen, the restart the line
               firstLineDrawn = false;
               previousX = sX;
@@ -131,29 +156,35 @@ public class OffscreenCanvas {
   
   // start line cropping utilities.
   
+  void drawCroppedLine(PVector point1, PVector point2){
+    ArrayList<PVector> croppedLine = cropLine(point1, point2);
+    if (croppedLine!=null) graphics.line(croppedLine.get(0).x, croppedLine.get(0).y, croppedLine.get(1).x, croppedLine.get(1).y);
+  }
+  
   int offscreenPoints(PVector point1, PVector point2){
     if (    (point1.x >= offscreenCanvasMargin && point1.x <= graphics.width-offscreenCanvasMargin && point1.y >= offscreenCanvasMargin && point1.y <= graphics.height-offscreenCanvasMargin)
+         && (point2.x >= offscreenCanvasMargin && point2.x <= graphics.width-offscreenCanvasMargin && point2.y >= offscreenCanvasMargin && point2.y <= graphics.height-offscreenCanvasMargin) )  {
+      // both of the two points are inside the margins
+      return 0;
+    } else if (    (point1.x >= offscreenCanvasMargin && point1.x <= graphics.width-offscreenCanvasMargin && point1.y >= offscreenCanvasMargin && point1.y <= graphics.height-offscreenCanvasMargin)
          || (point2.x >= offscreenCanvasMargin && point2.x <= graphics.width-offscreenCanvasMargin && point2.y >= offscreenCanvasMargin && point2.y <= graphics.height-offscreenCanvasMargin) )  {
-      // one or both of the two points are inside the margins
+      // one or the other of the two points are inside the margins
       
-      if ((point1.x <= offscreenCanvasMargin && point2.x > offscreenCanvasMargin) || (point2.x <= graphics.width-offscreenCanvasMargin && point1.x > graphics.width-offscreenCanvasMargin)) return 0;
-      if ((point2.x <= offscreenCanvasMargin && point1.x > offscreenCanvasMargin) || (point1.x <= graphics.width-offscreenCanvasMargin && point2.x > graphics.width-offscreenCanvasMargin)) return 1;
-      if ((point1.y <= offscreenCanvasMargin && point2.y > offscreenCanvasMargin) || (point2.y <= graphics.height-offscreenCanvasMargin && point1.y > graphics.height-offscreenCanvasMargin)) return 0;
-      if ((point2.y <= offscreenCanvasMargin && point1.y > offscreenCanvasMargin) || (point1.y <= graphics.height-offscreenCanvasMargin && point2.y > graphics.height-offscreenCanvasMargin)) return 1;
+      if ((point1.x <= offscreenCanvasMargin && point2.x > offscreenCanvasMargin) || (point2.x <= graphics.width-offscreenCanvasMargin && point1.x > graphics.width-offscreenCanvasMargin)) return 1;
+      if ((point2.x <= offscreenCanvasMargin && point1.x > offscreenCanvasMargin) || (point1.x <= graphics.width-offscreenCanvasMargin && point2.x > graphics.width-offscreenCanvasMargin)) return 2;
+      if ((point1.y <= offscreenCanvasMargin && point2.y > offscreenCanvasMargin) || (point2.y <= graphics.height-offscreenCanvasMargin && point1.y > graphics.height-offscreenCanvasMargin)) return 1;
+      if ((point2.y <= offscreenCanvasMargin && point1.y > offscreenCanvasMargin) || (point1.y <= graphics.height-offscreenCanvasMargin && point2.y > graphics.height-offscreenCanvasMargin)) return 2;
             
       return -1;
     } else {
-      // both of the two points are inside the margins
+      // both of the two points are outside the margins
       return 3;
     }
   }
   
   ArrayList<PVector> cropLine(PVector point1, PVector point2){
     ArrayList<PVector> result = new ArrayList<PVector>();
-    
-    result.add(point1);
-    result.add(point2);
-    
+   
     // line 1
     float x1 = point1.x;    
     float y1 = point1.y;
@@ -174,9 +205,13 @@ public class OffscreenCanvas {
       float intersectionX = x1 + (uA * (x2-x1));
       float intersectionY = y1 + (uA * (y2-y1));
       
-      if (x1<x2) result.set(0,new PVector(intersectionX,intersectionY));
-      else result.set(1,new PVector(intersectionX,intersectionY));
-      return result;
+      if (x1<x2){
+        x1 = intersectionX;
+        y1 = intersectionY;
+      } else {
+        x2 = intersectionX;
+        y2 = intersectionY;
+      }
     }  
     
     // right side of paper 2
@@ -193,10 +228,14 @@ public class OffscreenCanvas {
       float intersectionX = x1 + (uA * (x2-x1));
       float intersectionY = y1 + (uA * (y2-y1));
       
-      if (x1<x2) result.set(1,new PVector(intersectionX,intersectionY));
-      else result.set(0,new PVector(intersectionX,intersectionY));
+      if (x1<x2){
+        x2 = intersectionX;
+        y2 = intersectionY;
+      } else {
+        x1 = intersectionX;
+        y1 = intersectionY;
+      }
       
-      return result;
     }  
     
     // top of paper 2
@@ -213,10 +252,14 @@ public class OffscreenCanvas {
       float intersectionX = x1 + (uA * (x2-x1));
       float intersectionY = y1 + (uA * (y2-y1));
       
-      if (y1<y2) result.set(0,new PVector(intersectionX,intersectionY));
-      else result.set(1,new PVector(intersectionX,intersectionY));
+      if (y1<y2){
+        x1 = intersectionX;
+        y1 = intersectionY;
+      } else {
+        x2 = intersectionX;
+        y2 = intersectionY;
+      }
       
-      return result;
     }  
     
     // bottom of paper 2
@@ -233,13 +276,23 @@ public class OffscreenCanvas {
       float intersectionX = x1 + (uA * (x2-x1));
       float intersectionY = y1 + (uA * (y2-y1));
       
-      if (y1<y2) result.set(1,new PVector(intersectionX,intersectionY));
-      else result.set(0,new PVector(intersectionX,intersectionY));
-      
-      return result;
+      if (y1<y2){
+        x2 = intersectionX;
+        y2 = intersectionY;
+      } else {
+        x1 = intersectionX;
+        y1 = intersectionY;
+      }
     }  
     
-    // return uncropped points
-    return result;
+    if (offscreenPoints(new PVector(x1,y1), new PVector(x2,y2)) == 3){
+      // cropped results are now entirely outside of bounds
+      return null;
+    } else {
+      // return uncropped points
+      result.add(new PVector(x1,y1));
+      result.add(new PVector(x2,y2));
+      return result;
+    }
   }
 }

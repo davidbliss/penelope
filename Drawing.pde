@@ -2,7 +2,7 @@
 
 public class Drawing{
   Parameters parameters;
-  
+
   Cell [][][] cells;
   ArrayList<ArrayList<Cell>> chains;
   public int numCellsX;
@@ -15,7 +15,7 @@ public class Drawing{
   }
 
   public void init(){
-    
+
   }
 
   public void draw(OffscreenCanvas canvas){
@@ -26,21 +26,23 @@ public class Drawing{
     canvas.graphics.noFill();
 
     // draw a rectangle
-    //canvas.graphics.rect(100,100,200,200);
-    
+    // TODO: account for cropping rectangle and other 2d shapes?
+    // canvas.graphics.rect(100,100,200,200);
+
     // draw a 3d bezier
     //canvas.draw3dBezier(new PVector(-1000, 0, 0),new PVector(10, -10, 10),new PVector(90, -90, 90),new PVector(100, 100, 100));
     //canvas.draw3dBezier(new PVector(100,500,100),new PVector(90, -90, 90),new PVector(10, -10, 10),new PVector(-1000, 500, 100));
-    
     drawChains(canvas);
-    
-    
-    
-    // TODO: draw a cube
+
+    canvas.graphics.stroke(color(255,0,0));
+
+    canvas.drawBox(1200);
+    canvas.drawCroppedLine(new PVector(0,200), new PVector(1600,300));
+    canvas.graphics.stroke(color(0));
+
     canvas.graphics.endDraw();
-    
   }
-  
+
   public Cell getRandomCell(){
     PVector loc = getRandomLocation();
     return cells[int(loc.x)][int(loc.y)][int(loc.z)];
@@ -77,7 +79,7 @@ public class Drawing{
     PVector loc = new PVector(floor(random(numCellsX)), floor(random(numCellsY)), floor(random(numCellsZ)));
     return loc;
   }
-  
+
   public void makeChains(){
     numCellsX = int(parameters.cp5.getController("numCellsX").getValue());
     numCellsY = int(parameters.cp5.getController("numCellsY").getValue());
@@ -94,12 +96,12 @@ public class Drawing{
     }
 
     chains = new ArrayList<ArrayList<Cell>>();
-    
+
     for (int i=0; i<int(parameters.cp5.getController("numberChains").getValue()); i++){
       Cell previous = getRandomCell();
       ArrayList<Cell>chain=new ArrayList<Cell>();
       chain.add(previous);
-    
+
       for (int ii = 0; ii<int(parameters.cp5.getController("lengthChains").getValue()); ii++){
         Cell next = getRandomNeighboorCell(previous);
         if (next!=null) {
@@ -108,11 +110,11 @@ public class Drawing{
           previous = next;
         }
       }
-    
+
       chains.add(chain);
-    } 
+    }
   }
-  
+
   public void drawChains(OffscreenCanvas canvas){
     // draw a bunch of curves
     for (int ii = 0; ii<chains.size(); ii++){

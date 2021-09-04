@@ -1,5 +1,4 @@
-// TODO: add 3d box to offscreen canvas
-  
+
 // TODO: figure out an approach to layers (colors/width)
 
 import processing.svg.*;
@@ -27,21 +26,21 @@ void setup() {
 
   parameters = new Parameters(this);
   controls = new Controls(this);
-  
+
   init();
 }
 
 void init(){
   // things that may change when controls are updated
   float scaleAdjust = 71.95;
-  
+
   // calculate the height and width of the offscreen bits.
   int offscreenCanvasWidth = int(controls.cp5.getController("pageWidth").getValue() * scaleAdjust);
   int offscreenCanvasHeight = int(controls.cp5.getController("pageHeight").getValue() * scaleAdjust);
   offscreenCanvasMargin = int(controls.cp5.getController("margin").getValue() * scaleAdjust);
-  
+
   preview = new OffscreenCanvas(offscreenCanvasWidth, offscreenCanvasHeight);
-  
+
   // calculate the onscreen width and height
   float scaler;
   if(preview.graphics.width<preview.graphics.height){
@@ -51,15 +50,15 @@ void init(){
   }
   canvasWidth = int(preview.graphics.width * scaler);
   canvasHeight = int(preview.graphics.height * scaler);
-  
-  
+
+
   // initial OffscreenCanvas background is not drawn, so we draw it manually here.
   fill(255);
   rect(0,0,canvasWidth,canvasHeight);
-  
+
   // create the drawing object
   drawing = new Drawing(parameters);
-  
+
   // initial drawing
   drawOnce();
 }
@@ -70,25 +69,21 @@ void draw(){
 
 void drawOnce(){
   // drawing specific things
-  
+
   // make new chains
   drawing.makeChains();
-  
+
   // draw it offscreen
   drawDrawing(preview);
-  
+
   // draw the preview to the screen.
   image(preview.graphics, 0, 0, canvasWidth, canvasHeight);
 }
 
 // this is used to draw to screen and draw to offscreen SVG when saving... must keep separate from drawOnce command
 void drawDrawing(OffscreenCanvas canvas){
-  // TODO: move this to offscreenCanvas
   canvas.preDraw3d();
-  
   drawing.draw(canvas);
-  
-  // TODO: move this to offscreenCanvas
   canvas.postDraw3d();
 }
 
@@ -118,8 +113,8 @@ void saveSnapshot(){
   String name = "output/"+month()+"."+day()+"."+year()+"_"+hour()+"-"+minute()+"-"+second();
   preview.saveImage(name);
   parameters.manager.saveValues(name);
-  
-  // make an svg with the correct path and draw to it 
+
+  // make an svg with the correct path and draw to it
   OffscreenCanvas svg = new OffscreenCanvas(createGraphics(preview.graphics.width, preview.graphics.height, SVG, name+".svg"));
   drawDrawing(svg);
 }
