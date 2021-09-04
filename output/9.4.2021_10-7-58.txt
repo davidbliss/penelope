@@ -1,0 +1,14 @@
+slider, camRotationX: -0.78539824
+slider, camRotationY: 0.78539824
+slider, cellSize: 100.0
+slider, lengthChains: 200.0
+slider, numCellsX: 32.0
+slider, numCellsY: 32.0
+slider, numCellsZ: 32.0
+slider, numberChains: 100.0
+slider, sceneScale: 1.0
+slider, tightness: 0.35
+toggle, drawBoundingBox: 0.0
+toggle, ortho: 1.0
+toggle, singleOccupancy: 1.0
+
