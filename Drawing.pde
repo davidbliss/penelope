@@ -24,6 +24,11 @@ public class Drawing{
     canvas.graphics.strokeWeight(3);
     canvas.graphics.strokeCap(ROUND);
     canvas.graphics.noFill();
+    
+    //canvas.graphics.rect(offscreenCanvasMargin,offscreenCanvasMargin,canvas.graphics.width-(2*offscreenCanvasMargin),canvas.graphics.height-(2*offscreenCanvasMargin));
+    println("canvas.graphics.height", canvas.graphics.height);
+    println("canvas.graphics.width", canvas.graphics.width);
+    println("offscreenCanvasMargin", offscreenCanvasMargin);
 
     // draw a rectangle
     // TODO: account for cropping rectangle and other 2d shapes?

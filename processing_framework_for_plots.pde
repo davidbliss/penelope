@@ -1,9 +1,6 @@
-
 // TODO: figure out an approach to layers (colors/width)
 
 import processing.svg.*;
-
-boolean oneFrameDrawn;
 
 Parameters parameters; // drawing parameters that can be shuffled
 Controls controls;

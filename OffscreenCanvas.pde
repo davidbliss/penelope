@@ -2,7 +2,7 @@
 // but ran into numerous errors that make me thing that if you want to use SVG or PDF, 
 // it does not make sense to do so in an offscreen canvas.
 
-// TODO: BUG, PNG image is not being saved
+// TODO: BUG, PNG image is not being saved until it has been regenerated
 
 public class OffscreenCanvas {
   PGraphics graphics;
@@ -184,8 +184,6 @@ public class OffscreenCanvas {
  
   // TODO: BUG, does not crop properly for box.
   void drawCroppedPolyline(ArrayList<PVector> points){
-  
-    //println("begining shape:", points.size());
     graphics.beginShape();
     float previousX = 0;
     float previousY = 0;
@@ -196,14 +194,14 @@ public class OffscreenCanvas {
     if(points.size()==2){
       // NOTE: when using a PGraphic, shapes with just two vertex don't get draw into the onscreen graphic (even though they do when using SVG).
       ArrayList<PVector> croppedLine = cropLine(points.get(0), points.get(1));
-      graphics.vertex(croppedLine.get(0).x, croppedLine.get(0).y);
-      graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y);
-      graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y); // two work around the 2 vertex issue, send the second vertex twice.
+      if(croppedLine!=null) {
+        graphics.vertex(croppedLine.get(0).x, croppedLine.get(0).y);
+        graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y);
+        graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y); // two work around the 2 vertex issue, send the second vertex twice.
+      }
     } else {
       for (int p = 0; p < points.size(); p++){
         PVector point = points.get(p);
-        //println("--");
-        //println("this point:", point);
         float sX = point.x;
         float sY = point.y;
         if (newCurve == false){
@@ -211,48 +209,55 @@ public class OffscreenCanvas {
           if(sX != previousX || sY != previousY) {
             // See if crop is needed and to which side
             int offScreenPoints = offscreenPoints(new PVector(previousX, previousY), new PVector(sX, sY));
-  
             ArrayList<PVector> croppedLine = cropLine(new PVector(previousX, previousY), new PVector(sX, sY));
             
             if (croppedLine!=null){
               // capture the first vertex if this is s 1
               // TODO: can change this to p==0
               if(firstLineDrawn == false) {
-                //println("add v:", croppedLine.get(0));
                 graphics.vertex(croppedLine.get(0).x, croppedLine.get(0).y);
                 firstLineDrawn = true;
               }
               
-              //println("adding v:", croppedLine.get(1));
-              //println(offScreenPoints);
               graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y);
              
               previousX = croppedLine.get(1).x;
               previousY = croppedLine.get(1).y;
               
-              if (offScreenPoints == 1){
-                // the first point is offscreen, continue adding vertexes from here
-              } if (offScreenPoints == 2 || offScreenPoints == 3 ){ 
-                // TODO: should send this as a new set of vertexes in order to simplify
-                // the second point is offscreen, the restart the line
-                firstLineDrawn = false;
-                previousX = sX;
-                previousY = sY;
-                //println("ending shape, cropped line");
+              if (offScreenPoints == 2 || offScreenPoints == 3 ){ 
+                // if you have only drawn 2 vertex before being cropped, they will not show up on screen without third, so duplicate last.
+                if (p==1) {
+                  graphics.vertex(previousX, previousY);
+                }
                 graphics.endShape();
-                graphics.beginShape();
+               
+                ArrayList<PVector> newPoints = new ArrayList<PVector>(points.subList(p, points.size()));
+                drawCroppedPolyline(newPoints);
+                break;
               }
+              
+              previousX = croppedLine.get(1).x;
+              previousY = croppedLine.get(1).y;
+            } else {
+            // if you have only drawn 2 vertex before being cropped, they will not show up on screen without third, so duplicate last.
+              if (p==1) {
+                graphics.vertex(previousX, previousY);
+              }
+              graphics.endShape();
+             
+              ArrayList<PVector> newPoints = new ArrayList<PVector>(points.subList(p, points.size()));
+              drawCroppedPolyline(newPoints);
+              break;
             }
-          } 
+          }
+          
         } else {
-          //println("stashing v");
           newCurve = false;
           previousX = sX;
           previousY = sY;
         }
       }
     }
-    //println("ending shape");
     graphics.endShape();
   }
   
@@ -285,7 +290,7 @@ public class OffscreenCanvas {
   // TODO: evolve this to crop line based on list of lines rather than 4 hardcoded boundaries. -- to be used for layering shapes
   ArrayList<PVector> cropLine(PVector point1, PVector point2){
     ArrayList<PVector> result = new ArrayList<PVector>();
-   
+    int numIntersections=0;
     // line 1
     float x1 = point1.x;    
     float y1 = point1.y;
@@ -294,15 +299,16 @@ public class OffscreenCanvas {
     
     // left side of paper 2
     float x3 = offscreenCanvasMargin;  
-    float y3 = 0;
+    float y3 = offscreenCanvasMargin;
     float x4 = offscreenCanvasMargin;
-    float y4 = graphics.height;
+    float y4 = graphics.height - offscreenCanvasMargin;
     
     float uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
     float uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
     
     // if uA and uB are between 0-1, lines are colliding
     if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+      numIntersections++;
       float intersectionX = x1 + (uA * (x2-x1));
       float intersectionY = y1 + (uA * (y2-y1));
       
@@ -316,16 +322,17 @@ public class OffscreenCanvas {
     }  
     
     // right side of paper 2
-    x3 = graphics.width-offscreenCanvasMargin;  
-    y3 = 0;
-    x4 = graphics.width-offscreenCanvasMargin;
-    y4 = graphics.height;
+    x3 = graphics.width - offscreenCanvasMargin;  
+    y3 = offscreenCanvasMargin;
+    x4 = graphics.width - offscreenCanvasMargin;
+    y4 = graphics.height - offscreenCanvasMargin;
     
     uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
     uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
     
     // if uA and uB are between 0-1, lines are colliding
     if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+      numIntersections++;
       float intersectionX = x1 + (uA * (x2-x1));
       float intersectionY = y1 + (uA * (y2-y1));
       
@@ -340,9 +347,9 @@ public class OffscreenCanvas {
     }  
     
     // top of paper 2
-    x3 = 0;  
+    x3 = offscreenCanvasMargin;  
     y3 = offscreenCanvasMargin;
-    x4 = graphics.width;
+    x4 = graphics.width - offscreenCanvasMargin;
     y4 = offscreenCanvasMargin;
     
     uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
@@ -350,6 +357,8 @@ public class OffscreenCanvas {
     
     // if uA and uB are between 0-1, lines are colliding
     if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+      
+      numIntersections++;
       float intersectionX = x1 + (uA * (x2-x1));
       float intersectionY = y1 + (uA * (y2-y1));
       
@@ -364,16 +373,17 @@ public class OffscreenCanvas {
     }  
     
     // bottom of paper 2
-    x3 = 0;  
-    y3 = graphics.height-offscreenCanvasMargin;
-    x4 = graphics.width;
-    y4 = graphics.height-offscreenCanvasMargin;
+    x3 = offscreenCanvasMargin;  
+    y3 = graphics.height - offscreenCanvasMargin;
+    x4 = graphics.width - offscreenCanvasMargin;
+    y4 = graphics.height - offscreenCanvasMargin;
     
     uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
     uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
     
     // if uA and uB are between 0-1, lines are colliding
     if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+      numIntersections++;
       float intersectionX = x1 + (uA * (x2-x1));
       float intersectionY = y1 + (uA * (y2-y1));
       
@@ -386,14 +396,29 @@ public class OffscreenCanvas {
       }
     }  
     
-    if (offscreenPoints(new PVector(x1,y1), new PVector(x2,y2)) == 3){
-      // cropped results are now entirely outside of bounds
+    
+    if (offscreenPoints(new PVector(x1,y1), new PVector(x2,y2)) == 3 && numIntersections == 0){
       return null;
+    } 
+    
+    // return uncropped points
+    result.add(new PVector(x1,y1));
+    result.add(new PVector(x2,y2));
+    return result;
+  }
+  
+  PVector intersectionOf2Lines(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4){
+    float uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)); // distance along line 1 where it intersects line 2
+    float uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
+    
+    // if uA and uB are between 0-1, lines are colliding
+    if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+      float intersectionX = x1 + (uA * (x2-x1));
+      float intersectionY = y1 + (uA * (y2-y1));
+      
+      return new PVector(intersectionX, intersectionY);
     } else {
-      // return uncropped points
-      result.add(new PVector(x1,y1));
-      result.add(new PVector(x2,y2));
-      return result;
+      return null;
     }
   }
 }
