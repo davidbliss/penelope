@@ -32,13 +32,13 @@ public class Drawing{
     // draw a 3d bezier
     //canvas.draw3dBezier(new PVector(-1000, 0, 0),new PVector(10, -10, 10),new PVector(90, -90, 90),new PVector(100, 100, 100));
     //canvas.draw3dBezier(new PVector(100,500,100),new PVector(90, -90, 90),new PVector(10, -10, 10),new PVector(-1000, 500, 100));
-    drawChains(canvas);
+    //drawChains(canvas);
 
     canvas.graphics.stroke(color(255,0,0));
-
+    canvas.drawBox(18);
+    canvas.drawBox(180);
     canvas.drawBox(1200);
-    canvas.drawCroppedLine(new PVector(0,200), new PVector(1600,300));
-    canvas.graphics.stroke(color(0));
+    //canvas.drawCroppedLine(new PVector(0,200), new PVector(1600,300));
 
     canvas.graphics.endDraw();
   }
@@ -53,7 +53,6 @@ public class Drawing{
     if (options.size()==0) return null;
     return options.get(floor(random(options.size())));
   }
-
 
   private ArrayList<Cell> getAvailableNeighboors(Cell cell){
     ArrayList<Cell> options = new ArrayList<Cell>();

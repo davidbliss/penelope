@@ -2,6 +2,8 @@
 // but ran into numerous errors that make me thing that if you want to use SVG or PDF, 
 // it does not make sense to do so in an offscreen canvas.
 
+// TODO: BUG, PNG image is not being saved
+
 public class OffscreenCanvas {
   PGraphics graphics;
   PGraphics offscreen3d;
@@ -50,6 +52,12 @@ public class OffscreenCanvas {
     offscreen3d.endDraw();
   }
   
+  // start specialized functions for 2d objects 
+  void fillPolygon(){
+    // TODO: take a list of pvertex and fill them with strokes
+    // TODO: make a collectin of fill styles (dots, lines, solid).
+  }
+  
   // start functions for rendering 3d objects to 2d SVG. 
   
   // TODO: modify to make continuous lines part of one shape
@@ -73,34 +81,89 @@ public class OffscreenCanvas {
     PVector p72d = new PVector(offscreen3d.screenX(p7.x,p7.y,p7.z), offscreen3d.screenY(p7.x,p7.y,p7.z));
     PVector p82d = new PVector(offscreen3d.screenX(p8.x,p8.y,p8.z), offscreen3d.screenY(p8.x,p8.y,p8.z));
     
-    drawCroppedLine(p12d, p22d);
-    drawCroppedLine(p12d, p32d);
-    drawCroppedLine(p32d, p42d);
-    drawCroppedLine(p42d, p22d);
+    //drawCroppedLine(p12d, p22d);
+    //drawCroppedLine(p12d, p32d);
+    //drawCroppedLine(p32d, p42d);
+    //drawCroppedLine(p42d, p22d);
     
-    drawCroppedLine(p52d, p62d);
-    drawCroppedLine(p52d, p72d);
-    drawCroppedLine(p72d, p82d);
-    drawCroppedLine(p82d, p62d);
+    //drawCroppedLine(p52d, p62d);
+    //drawCroppedLine(p52d, p72d);
+    //drawCroppedLine(p72d, p82d);
+    //drawCroppedLine(p82d, p62d);
 
-    drawCroppedLine(p12d, p52d);
-    drawCroppedLine(p22d, p62d);
-    drawCroppedLine(p32d, p72d);
-    drawCroppedLine(p42d, p82d);
+    //drawCroppedLine(p12d, p52d);
+    //drawCroppedLine(p22d, p62d);
+    //drawCroppedLine(p32d, p72d);
+    //drawCroppedLine(p42d, p82d);
+    
+    // Front sides only
+    //ArrayList<PVector> points = new ArrayList<PVector>();
+    //points.add(p12d);
+    //points.add(p22d);
+    //points.add(p42d);
+    //points.add(p32d);
+    //points.add(p12d);
+    //points.add(p52d);
+    //points.add(p72d);
+    //points.add(p82d);
+    //points.add(p42d);
+    //drawCroppedPolyline(points);
+    
+    //points = new ArrayList<PVector>();
+    //points.add(p72d);
+    //points.add(p32d);
+    //drawCroppedPolyline(points);
+    // end front sides only
+    
+    // all sides
+    ArrayList<PVector> points = new ArrayList<PVector>();
+    points.add(p42d);
+    points.add(p22d);
+    points.add(p12d);
+    points.add(p32d);
+    points.add(p42d);
+    points.add(p82d);
+    points.add(p72d);
+    drawCroppedPolyline(points);
+    
+    points = new ArrayList<PVector>();
+    points.add(p12d);
+    points.add(p52d);
+    points.add(p72d);
+    points.add(p32d);
+    drawCroppedPolyline(points);
+    
+    points = new ArrayList<PVector>();
+    points.add(p52d);
+    points.add(p62d);
+    points.add(p22d);
+    drawCroppedPolyline(points);
+    
+    points = new ArrayList<PVector>();
+    points.add(p62d);
+    points.add(p82d);
+    drawCroppedPolyline(points);
+    // end all sides.
+    
+    // tileable (front only)
+    //ArrayList<PVector> points = new ArrayList<PVector>();
+    //points.add(p32d);
+    //points.add(p42d);
+    //points.add(p22d);
+    //points.add(p12d);
+    //points.add(p32d);
+    //points.add(p72d);
+    //points.add(p52d);
+    //points.add(p12d);
+    //drawCroppedPolyline(points);
+    // end tilable.
   }
   
   void draw3dBezier(PVector anchor1, PVector control1, PVector control2, PVector anchor2){
     int steps = 2 + int(10 * controls.cp5.getController("curveFidelity").getValue()); // need minimum of 2 segments;
+
+    ArrayList<PVector> points = new ArrayList<PVector>();
     
-    graphics.beginShape();
-    
-    float previousX = 0;
-    float previousY = 0;
-    
-    Boolean newCurve = true;
-    Boolean firstLineDrawn = false;
-    
-    // TODO: abstract this to take a list of 2d vertexes and draw them properly with cropping, etc. to be used by anything.
     for (int s = 0; s <= steps; s++) {
       float t = s / float(steps);
       
@@ -111,50 +174,87 @@ public class OffscreenCanvas {
       float sX = offscreen3d.screenX(x,y,z);
       float sY = offscreen3d.screenY(x,y,z);
       
-      if (newCurve == false){
-        // skip duplicate vertexes
-        if(sX != previousX || sY != previousY) {
-          // See if crop is needed and to which side
-          int offScreenPoints = offscreenPoints(new PVector(previousX, previousY), new PVector(sX, sY));
-
-          ArrayList<PVector> croppedLine = cropLine(new PVector(previousX, previousY), new PVector(sX, sY));
-          if (croppedLine!=null){
-            // capture the first vertex if this is s 1
-            if(firstLineDrawn == false) {
-              graphics.vertex(croppedLine.get(0).x, croppedLine.get(0).y);
-              firstLineDrawn = true;
-            }
-            
-            graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y);
-           
-            previousX = croppedLine.get(1).x;
-            previousY = croppedLine.get(1).y;
-            
-            if (offScreenPoints == 1){
-              // the first point is offscreen, continue adding vertexes from here
-            } if (offScreenPoints == 2 || offScreenPoints == 3 ){ 
-              // the second point is offscreen, the restart the line
-              firstLineDrawn = false;
-              previousX = sX;
-              previousY = sY;
-              //println("ending shape, cropped line");
-              graphics.endShape();
-              graphics.beginShape();
-            }
-          }
-        } 
-      } else {
-        newCurve = false;
-        previousX = sX;
-        previousY = sY;
-      }
-
+      points.add(new PVector(sX, sY));
     }
-    graphics.endShape();
+    
+    drawCroppedPolyline(points);
   }
   
-  
   // start line cropping utilities.
+ 
+  // TODO: BUG, does not crop properly for box.
+  void drawCroppedPolyline(ArrayList<PVector> points){
+  
+    //println("begining shape:", points.size());
+    graphics.beginShape();
+    float previousX = 0;
+    float previousY = 0;
+    
+    Boolean newCurve = true;
+    Boolean firstLineDrawn = false;
+    
+    if(points.size()==2){
+      // NOTE: when using a PGraphic, shapes with just two vertex don't get draw into the onscreen graphic (even though they do when using SVG).
+      ArrayList<PVector> croppedLine = cropLine(points.get(0), points.get(1));
+      graphics.vertex(croppedLine.get(0).x, croppedLine.get(0).y);
+      graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y);
+      graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y); // two work around the 2 vertex issue, send the second vertex twice.
+    } else {
+      for (int p = 0; p < points.size(); p++){
+        PVector point = points.get(p);
+        //println("--");
+        //println("this point:", point);
+        float sX = point.x;
+        float sY = point.y;
+        if (newCurve == false){
+          // skip duplicate vertexes
+          if(sX != previousX || sY != previousY) {
+            // See if crop is needed and to which side
+            int offScreenPoints = offscreenPoints(new PVector(previousX, previousY), new PVector(sX, sY));
+  
+            ArrayList<PVector> croppedLine = cropLine(new PVector(previousX, previousY), new PVector(sX, sY));
+            
+            if (croppedLine!=null){
+              // capture the first vertex if this is s 1
+              // TODO: can change this to p==0
+              if(firstLineDrawn == false) {
+                //println("add v:", croppedLine.get(0));
+                graphics.vertex(croppedLine.get(0).x, croppedLine.get(0).y);
+                firstLineDrawn = true;
+              }
+              
+              //println("adding v:", croppedLine.get(1));
+              //println(offScreenPoints);
+              graphics.vertex(croppedLine.get(1).x, croppedLine.get(1).y);
+             
+              previousX = croppedLine.get(1).x;
+              previousY = croppedLine.get(1).y;
+              
+              if (offScreenPoints == 1){
+                // the first point is offscreen, continue adding vertexes from here
+              } if (offScreenPoints == 2 || offScreenPoints == 3 ){ 
+                // TODO: should send this as a new set of vertexes in order to simplify
+                // the second point is offscreen, the restart the line
+                firstLineDrawn = false;
+                previousX = sX;
+                previousY = sY;
+                //println("ending shape, cropped line");
+                graphics.endShape();
+                graphics.beginShape();
+              }
+            }
+          } 
+        } else {
+          //println("stashing v");
+          newCurve = false;
+          previousX = sX;
+          previousY = sY;
+        }
+      }
+    }
+    //println("ending shape");
+    graphics.endShape();
+  }
   
   void drawCroppedLine(PVector point1, PVector point2){
     ArrayList<PVector> croppedLine = cropLine(point1, point2);
@@ -182,6 +282,7 @@ public class OffscreenCanvas {
     }
   }
   
+  // TODO: evolve this to crop line based on list of lines rather than 4 hardcoded boundaries. -- to be used for layering shapes
   ArrayList<PVector> cropLine(PVector point1, PVector point2){
     ArrayList<PVector> result = new ArrayList<PVector>();
    
