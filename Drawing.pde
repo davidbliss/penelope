@@ -26,9 +26,6 @@ public class Drawing{
     canvas.graphics.noFill();
     
     //canvas.graphics.rect(offscreenCanvasMargin,offscreenCanvasMargin,canvas.graphics.width-(2*offscreenCanvasMargin),canvas.graphics.height-(2*offscreenCanvasMargin));
-    println("canvas.graphics.height", canvas.graphics.height);
-    println("canvas.graphics.width", canvas.graphics.width);
-    println("offscreenCanvasMargin", offscreenCanvasMargin);
 
     // draw a rectangle
     // TODO: account for cropping rectangle and other 2d shapes?
@@ -37,7 +34,7 @@ public class Drawing{
     // draw a 3d bezier
     //canvas.draw3dBezier(new PVector(-1000, 0, 0),new PVector(10, -10, 10),new PVector(90, -90, 90),new PVector(100, 100, 100));
     //canvas.draw3dBezier(new PVector(100,500,100),new PVector(90, -90, 90),new PVector(10, -10, 10),new PVector(-1000, 500, 100));
-    //drawChains(canvas);
+    drawChains(canvas);
 
     canvas.graphics.stroke(color(255,0,0));
     canvas.drawBox(18);
