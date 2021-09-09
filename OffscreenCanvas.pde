@@ -62,6 +62,7 @@ public class OffscreenCanvas {
 
   void drawBox(float size){
     // make 8 vertexes to map to 8 2d points
+    PVector p0 = new PVector(-size/2,-3*size/2,-size/2);
     PVector p1 = new PVector(-size/2,-size/2,-size/2);
     PVector p2 = new PVector(size/2,-size/2,-size/2);
     PVector p3 = new PVector(-size/2,-size/2,size/2);
@@ -71,6 +72,7 @@ public class OffscreenCanvas {
     PVector p7 = new PVector(-size/2,size/2,size/2);
     PVector p8 = new PVector(size/2,size/2,size/2);
 
+    PVector p02d = new PVector(offscreen3d.screenX(p0.x,p0.y,p0.z), offscreen3d.screenY(p0.x,p0.y,p0.z));
     PVector p12d = new PVector(offscreen3d.screenX(p1.x,p1.y,p1.z), offscreen3d.screenY(p1.x,p1.y,p1.z));
     PVector p22d = new PVector(offscreen3d.screenX(p2.x,p2.y,p2.z), offscreen3d.screenY(p2.x,p2.y,p2.z));
     PVector p32d = new PVector(offscreen3d.screenX(p3.x,p3.y,p3.z), offscreen3d.screenY(p3.x,p3.y,p3.z));
@@ -79,21 +81,6 @@ public class OffscreenCanvas {
     PVector p62d = new PVector(offscreen3d.screenX(p6.x,p6.y,p6.z), offscreen3d.screenY(p6.x,p6.y,p6.z));
     PVector p72d = new PVector(offscreen3d.screenX(p7.x,p7.y,p7.z), offscreen3d.screenY(p7.x,p7.y,p7.z));
     PVector p82d = new PVector(offscreen3d.screenX(p8.x,p8.y,p8.z), offscreen3d.screenY(p8.x,p8.y,p8.z));
-
-    //drawCroppedLine(p12d, p22d);
-    //drawCroppedLine(p12d, p32d);
-    //drawCroppedLine(p32d, p42d);
-    //drawCroppedLine(p42d, p22d);
-
-    //drawCroppedLine(p52d, p62d);
-    //drawCroppedLine(p52d, p72d);
-    //drawCroppedLine(p72d, p82d);
-    //drawCroppedLine(p82d, p62d);
-
-    //drawCroppedLine(p12d, p52d);
-    //drawCroppedLine(p22d, p62d);
-    //drawCroppedLine(p32d, p72d);
-    //drawCroppedLine(p42d, p82d);
 
     // Front sides only
     //ArrayList<PVector> points = new ArrayList<PVector>();
@@ -144,18 +131,103 @@ public class OffscreenCanvas {
     drawCroppedPolyline(points);
     // end all sides.
 
-    // tileable (front only)
-    //ArrayList<PVector> points = new ArrayList<PVector>();
-    //points.add(p32d);
-    //points.add(p42d);
-    //points.add(p22d);
-    //points.add(p12d);
-    //points.add(p32d);
-    //points.add(p72d);
-    //points.add(p52d);
-    //points.add(p12d);
-    //drawCroppedPolyline(points);
-    // end tilable.
+  }
+  
+  void drawBoxTile(float size, boolean top, boolean left, boolean right, boolean bottom, boolean oddRow){
+    // make 8 vertexes to map to 8 2d points
+    PVector p0 = new PVector(-size/2,-3*size/2,-size/2);
+    PVector p1 = new PVector(-size/2,-size/2,-size/2);
+    PVector p2 = new PVector(size/2,-size/2,-size/2);
+    PVector p3 = new PVector(-size/2,-size/2,size/2);
+    PVector p4 = new PVector(size/2,-size/2,size/2);
+    PVector p5 = new PVector(-size/2,size/2,-size/2);
+    PVector p6 = new PVector(size/2,size/2,-size/2);
+    PVector p7 = new PVector(-size/2,size/2,size/2);
+    PVector p8 = new PVector(size/2,size/2,size/2);
+
+    PVector p02d = new PVector(offscreen3d.screenX(p0.x,p0.y,p0.z), offscreen3d.screenY(p0.x,p0.y,p0.z));
+    PVector p12d = new PVector(offscreen3d.screenX(p1.x,p1.y,p1.z), offscreen3d.screenY(p1.x,p1.y,p1.z));
+    PVector p22d = new PVector(offscreen3d.screenX(p2.x,p2.y,p2.z), offscreen3d.screenY(p2.x,p2.y,p2.z));
+    PVector p32d = new PVector(offscreen3d.screenX(p3.x,p3.y,p3.z), offscreen3d.screenY(p3.x,p3.y,p3.z));
+    PVector p42d = new PVector(offscreen3d.screenX(p4.x,p4.y,p4.z), offscreen3d.screenY(p4.x,p4.y,p4.z));
+    PVector p52d = new PVector(offscreen3d.screenX(p5.x,p5.y,p5.z), offscreen3d.screenY(p5.x,p5.y,p5.z));
+    PVector p62d = new PVector(offscreen3d.screenX(p6.x,p6.y,p6.z), offscreen3d.screenY(p6.x,p6.y,p6.z));
+    PVector p72d = new PVector(offscreen3d.screenX(p7.x,p7.y,p7.z), offscreen3d.screenY(p7.x,p7.y,p7.z));
+    PVector p82d = new PVector(offscreen3d.screenX(p8.x,p8.y,p8.z), offscreen3d.screenY(p8.x,p8.y,p8.z));
+
+    println("--");
+    //println(top, left, right, bottom, oddRow);
+   
+    if (top==false && left==false && right==false && bottom==false ){
+      println("standard");
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p02d);
+      points.add(p12d);
+      points.add(p32d);
+      points.add(p42d);
+      points.add(p82d);
+      points.add(p72d);
+      points.add(p52d);
+      drawCroppedPolyline(points);
+    } else if (top==true && left==false && right==false && bottom==false) {
+      println("top row");
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p12d);
+      points.add(p32d);
+      points.add(p42d);
+      points.add(p82d);
+      points.add(p72d);
+      points.add(p52d);
+      drawCroppedPolyline(points);
+    } else if (left==true && right==false && bottom==false && oddRow==false) {
+      println("first column, evenRow");
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p32d);
+      points.add(p42d);
+      points.add(p82d);
+      points.add(p72d);
+      drawCroppedPolyline(points);
+    } else if (left==true && right==false && bottom==false && oddRow==true) {
+      println("first column, oddRow");
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p42d);
+      points.add(p82d);
+      drawCroppedPolyline(points);
+    } else if (top==true && left==false && right==true && bottom==false) {
+      println("last column, first row");
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p12d);
+      points.add(p32d);
+      points.add(p72d);
+      points.add(p52d);
+      drawCroppedPolyline(points);
+    } else if (left==false && right==true && bottom==false && oddRow==false) {
+      println("last column, even row");
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p02d);
+      points.add(p12d);
+      points.add(p32d);
+      points.add(p72d);
+      points.add(p52d);
+      drawCroppedPolyline(points);
+    } else if (left==false && right==true && bottom==false && oddRow==true) {
+      println("last column, odd row");
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p02d);
+      points.add(p12d);
+      points.add(p32d);
+      points.add(p42d);
+      points.add(p82d);
+      points.add(p72d);
+      points.add(p52d);
+      drawCroppedPolyline(points);
+    } else if (top==false && left==false && bottom==true) {
+      println("last row");
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p02d);
+      points.add(p12d);
+      drawCroppedPolyline(points);
+    }
   }
 
   void draw3dBezier(PVector anchor1, PVector control1, PVector control2, PVector anchor2){

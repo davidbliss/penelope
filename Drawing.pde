@@ -34,12 +34,32 @@ public class Drawing{
     // draw a 3d bezier
     //canvas.draw3dBezier(new PVector(-1000, 0, 0),new PVector(10, -10, 10),new PVector(90, -90, 90),new PVector(100, 100, 100));
     //canvas.draw3dBezier(new PVector(100,500,100),new PVector(90, -90, 90),new PVector(10, -10, 10),new PVector(-1000, 500, 100));
-    drawChains(canvas);
+    //drawChains(canvas);
 
+    
+    //canvas.drawBox(18);
+    
+    float boxSize = 162.5;
+    int numCols = 6;
+    int numRows = 9;
+    
     canvas.graphics.stroke(color(255,0,0));
-    canvas.drawBox(18);
-    canvas.drawBox(180);
-    canvas.drawBox(1200);
+    
+    canvas.offscreen3d.translate(-boxSize*numCols/2, -boxSize*(numRows/2+2.2), -boxSize*numCols/2);
+    
+    //canvas.offscreen3d.pushMatrix();
+    for (int r = 0; r < numRows; r++){
+      canvas.offscreen3d.translate(0, boxSize, boxSize);
+      for (int c = 0; c < numCols; c++){
+        
+        canvas.drawBoxTile(boxSize, r==0, c==0, c==numCols-1, r==numRows-1, r%2==1);
+        
+        canvas.offscreen3d.translate(boxSize, 0, boxSize);
+      }
+      canvas.offscreen3d.translate(-boxSize*(numCols+((r+1)%2)), 0, -boxSize*(numCols+((r+1)%2)));
+    }
+      
+    //canvas.drawBox(1200);
     //canvas.drawCroppedLine(new PVector(0,200), new PVector(1600,300));
 
     canvas.graphics.endDraw();
