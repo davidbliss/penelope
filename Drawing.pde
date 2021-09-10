@@ -58,6 +58,8 @@ public class Drawing{
       }
       canvas.offscreen3d.translate(-boxSize*(numCols+((r+1)%2)), 0, -boxSize*(numCols+((r+1)%2)));
     }
+    
+    
       
     //canvas.drawBox(1200);
     //canvas.drawCroppedLine(new PVector(0,200), new PVector(1600,300));
@@ -141,10 +143,14 @@ public class Drawing{
     for (int ii = 0; ii<chains.size(); ii++){
       ArrayList<Cell>chain = chains.get(ii);
 
+      ArrayList<ArrayList<PVector>> lines = new ArrayList<ArrayList<PVector>>();
+      
       for (int i = 1; i<chain.size()-1; i++){
-        ArrayList<PVector> pvList= chain.get(i).getConnectionVertex(chain.get(i-1), chain.get(i+1));
-        canvas.draw3dBezier(pvList.get(0),pvList.get(1),pvList.get(2),pvList.get(3));
+        ArrayList<PVector> bezierData = chain.get(i).getConnectionVertex(chain.get(i-1), chain.get(i+1));
+        ArrayList<PVector> points = canvas.get3dBezierPoints(bezierData.get(0),bezierData.get(1),bezierData.get(2),bezierData.get(3));
+        lines.add(points);
       }
+      canvas.drawCroppedPolylines(lines);
     }
   }
 }

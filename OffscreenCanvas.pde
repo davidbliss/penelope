@@ -60,6 +60,7 @@ public class OffscreenCanvas {
 
   // start functions for rendering 3d objects to 2d SVG.
 
+  // TODO: add wireframe boolean
   void drawBox(float size){
     // make 8 vertexes to map to 8 2d points
     PVector p0 = new PVector(-size/2,-3*size/2,-size/2);
@@ -132,6 +133,7 @@ public class OffscreenCanvas {
 
   }
   
+  // TODO: move this to drawing.
   void drawBoxTile(float size, boolean top, boolean left, boolean right, boolean bottom, boolean oddRow){
     // make 8 vertexes to map to 8 2d points
     PVector p0 = new PVector(-size/2,-3*size/2,-size/2);
@@ -223,8 +225,8 @@ public class OffscreenCanvas {
       drawCroppedPolyline(points);
     }
   }
-
-  void draw3dBezier(PVector anchor1, PVector control1, PVector control2, PVector anchor2){
+  
+  ArrayList<PVector> get3dBezierPoints(PVector anchor1, PVector control1, PVector control2, PVector anchor2){
     int steps = 2 + int(10 * controls.cp5.getController("curveFidelity").getValue()); // need minimum of 2 segments;
 
     ArrayList<PVector> points = new ArrayList<PVector>();
@@ -242,13 +244,31 @@ public class OffscreenCanvas {
       points.add(new PVector(sX, sY));
     }
 
-    drawCroppedPolyline(points);
+    return points;
+  }
+
+  void draw3dBezier(PVector anchor1, PVector control1, PVector control2, PVector anchor2){
+    ArrayList<PVector> points = get3dBezierPoints(anchor1, control1, control2, anchor2);
+
+    drawCroppedPolyline(points, true);
   }
 
   // start line cropping utilities.
-
-  void drawCroppedPolyline(ArrayList<PVector> points){
+  
+  void drawCroppedPolylines(ArrayList<ArrayList<PVector>> lines){
     graphics.beginShape();
+    for (ArrayList<PVector>points : lines){
+      drawCroppedPolyline(points, false);
+    }
+    graphics.endShape();
+  }
+  
+  void drawCroppedPolyline(ArrayList<PVector> points){
+    drawCroppedPolyline(points, true);
+  }
+
+  void drawCroppedPolyline(ArrayList<PVector> points, boolean isStandalone){
+    if (isStandalone==true) graphics.beginShape();
     float previousX = 0;
     float previousY = 0;
 
@@ -285,27 +305,24 @@ public class OffscreenCanvas {
 
               if (offScreenPoints == 2 || offScreenPoints == 3 ){
                 // if you have only drawn 2 vertex before being cropped, they will not show up on screen without third, so duplicate last.
-                if (p==1) {
-                  graphics.vertex(previousX, previousY);
-                }
+                if (p==1) graphics.vertex(previousX, previousY);
+                
                 graphics.endShape();
+                if(isStandalone==false) graphics.beginShape();
 
                 ArrayList<PVector> newPoints = new ArrayList<PVector>(points.subList(p, points.size()));
-                drawCroppedPolyline(newPoints);
+                drawCroppedPolyline(newPoints, isStandalone);
                 break;
               }
-
-              previousX = croppedLine.get(1).x;
-              previousY = croppedLine.get(1).y;
             } else {
-            // if you have only drawn 2 vertex before being cropped, they will not show up on screen without third, so duplicate last.
-              if (p==1) {
-                graphics.vertex(previousX, previousY);
-              }
+              // if you have only drawn 2 vertex before being cropped, they will not show up on screen without third, so duplicate last.
+              if (p==1) graphics.vertex(previousX, previousY);
+              
               graphics.endShape();
+              if(isStandalone==false) graphics.beginShape();
 
               ArrayList<PVector> newPoints = new ArrayList<PVector>(points.subList(p, points.size()));
-              drawCroppedPolyline(newPoints);
+              drawCroppedPolyline(newPoints, isStandalone);
               break;
             }
           }
@@ -317,7 +334,7 @@ public class OffscreenCanvas {
         }
       }
     }
-    graphics.endShape();
+    if (isStandalone==true) graphics.endShape();
   }
 
   void drawCroppedLine(PVector point1, PVector point2){
