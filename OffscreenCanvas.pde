@@ -60,8 +60,11 @@ public class OffscreenCanvas {
 
   // start functions for rendering 3d objects to 2d SVG.
 
-  // TODO: add wireframe boolean
   void drawBox(float size){
+    drawBox(size, true);
+  }
+  
+  void drawBox(float size, boolean isWireframe){
     // make 8 vertexes to map to 8 2d points
     PVector p0 = new PVector(-size/2,-3*size/2,-size/2);
     PVector p1 = new PVector(-size/2,-size/2,-size/2);
@@ -82,54 +85,54 @@ public class OffscreenCanvas {
     PVector p72d = new PVector(offscreen3d.screenX(p7.x,p7.y,p7.z), offscreen3d.screenY(p7.x,p7.y,p7.z));
     PVector p82d = new PVector(offscreen3d.screenX(p8.x,p8.y,p8.z), offscreen3d.screenY(p8.x,p8.y,p8.z));
 
+    if (isWireframe == false){
     // Front sides only
-    //ArrayList<PVector> points = new ArrayList<PVector>();
-    //points.add(p12d);
-    //points.add(p22d);
-    //points.add(p42d);
-    //points.add(p32d);
-    //points.add(p12d);
-    //points.add(p52d);
-    //points.add(p72d);
-    //points.add(p82d);
-    //points.add(p42d);
-    //drawCroppedPolyline(points);
-
-    //points = new ArrayList<PVector>();
-    //points.add(p72d);
-    //points.add(p32d);
-    //drawCroppedPolyline(points);
-    // end front sides only
-
-    // all sides
-    ArrayList<PVector> points = new ArrayList<PVector>();
-    points.add(p42d);
-    points.add(p22d);
-    points.add(p12d);
-    points.add(p32d);
-    points.add(p42d);
-    points.add(p82d);
-    points.add(p72d);
-    drawCroppedPolyline(points);
-
-    points = new ArrayList<PVector>();
-    points.add(p12d);
-    points.add(p52d);
-    points.add(p72d);
-    points.add(p32d);
-    drawCroppedPolyline(points);
-
-    points = new ArrayList<PVector>();
-    points.add(p52d);
-    points.add(p62d);
-    points.add(p22d);
-    drawCroppedPolyline(points);
-
-    points = new ArrayList<PVector>();
-    points.add(p62d);
-    points.add(p82d);
-    drawCroppedPolyline(points);
-    // end all sides.
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p12d);
+      points.add(p22d);
+      points.add(p42d);
+      points.add(p32d);
+      points.add(p12d);
+      points.add(p52d);
+      points.add(p72d);
+      points.add(p82d);
+      points.add(p42d);
+      drawCroppedPolyline(points);
+  
+      points = new ArrayList<PVector>();
+      points.add(p72d);
+      points.add(p32d);
+      drawCroppedPolyline(points);
+    } else {
+      // all sides
+      ArrayList<PVector> points = new ArrayList<PVector>();
+      points.add(p42d);
+      points.add(p22d);
+      points.add(p12d);
+      points.add(p32d);
+      points.add(p42d);
+      points.add(p82d);
+      points.add(p72d);
+      drawCroppedPolyline(points);
+  
+      points = new ArrayList<PVector>();
+      points.add(p12d);
+      points.add(p52d);
+      points.add(p72d);
+      points.add(p32d);
+      drawCroppedPolyline(points);
+  
+      points = new ArrayList<PVector>();
+      points.add(p52d);
+      points.add(p62d);
+      points.add(p22d);
+      drawCroppedPolyline(points);
+  
+      points = new ArrayList<PVector>();
+      points.add(p62d);
+      points.add(p82d);
+      drawCroppedPolyline(points);
+    }
 
   }
   

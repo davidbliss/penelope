@@ -36,8 +36,9 @@ public class Drawing{
     //canvas.draw3dBezier(new PVector(100,500,100),new PVector(90, -90, 90),new PVector(10, -10, 10),new PVector(-1000, 500, 100));
     //drawChains(canvas);
 
-    
-    //canvas.drawBox(18);
+    //canvas.drawBox(18, false);
+    //canvas.drawBox(180, true);
+    //canvas.drawBox(1200);
     
     float boxSize = 162.5;
     int numCols = 6;
@@ -61,7 +62,7 @@ public class Drawing{
     
     
       
-    //canvas.drawBox(1200);
+    
     //canvas.drawCroppedLine(new PVector(0,200), new PVector(1600,300));
 
     canvas.graphics.endDraw();
