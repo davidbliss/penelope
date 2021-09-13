@@ -4,18 +4,47 @@
 
 // TODO: BUG, PNG image is not being saved until it has been regenerated
 
-public class OffscreenCanvas {
+public class PenelopeCanvas {
   PGraphics graphics;
   PGraphics offscreen3d;
+  
+  Parameters parameters; // drawing parameters that can be shuffled
+  Controls controls;
+  
+  float scaleAdjust = 71.95;
+  
+  int margin;
+  float camRotationX;
+  float camRotationY;
+  float camRotationZ;
 
-  OffscreenCanvas(int width, int height) {
+  PenelopeCanvas(Parameters parameters, Controls controls) {
+    this.parameters = parameters;
+    this.controls = controls;
+    int width = int(controls.cp5.getController("pageWidth").getValue()*scaleAdjust);
+    int height = int(controls.cp5.getController("pageHeight").getValue()*scaleAdjust);
+    init();
+    
     graphics = createGraphics(width, height, P3D);
     offscreen3d = createGraphics(width, height, P3D);
   }
 
-  OffscreenCanvas(PGraphics svg) {
+  PenelopeCanvas(PGraphics svg, Parameters parameters, Controls controls) {
+    this.parameters = parameters;
+    this.controls = controls;
+    init();
+    
     graphics = svg;
     offscreen3d = createGraphics(svg.width, svg.height, P3D);
+  }
+  
+  void init(){
+    // calculate the height and width of the offscreen bits.
+    margin = int(controls.cp5.getController("margin").getValue()*scaleAdjust);
+    
+    camRotationX = parameters.cp5.getController("camRotationX").getValue();
+    camRotationY = parameters.cp5.getController("camRotationY").getValue();
+    camRotationZ = parameters.cp5.getController("camRotationZ").getValue();
   }
 
   void clear() {
@@ -23,7 +52,7 @@ public class OffscreenCanvas {
     graphics.beginDraw();
     graphics.background(255);
     graphics.endDraw();
-
+    
     offscreen3d.clear();
   }
 
@@ -41,10 +70,11 @@ public class OffscreenCanvas {
     offscreen3d.pushMatrix();
     offscreen3d.noStroke();
     offscreen3d.lights();
-    offscreen3d.translate(offscreen3d.width/2, offscreen3d.width/2, 0);
+    offscreen3d.translate(offscreen3d.width/2, offscreen3d.height/2, 0);
     offscreen3d.scale(parameters.cp5.getController("sceneScale").getValue());
     offscreen3d.rotateX(camRotationX);
     offscreen3d.rotateY(camRotationY);
+    offscreen3d.rotateZ(camRotationZ);
   }
 
   void postDraw3d(){
@@ -133,10 +163,7 @@ public class OffscreenCanvas {
       points.add(p82d);
       drawCroppedPolyline(points);
     }
-
   }
-  
-  
   
   ArrayList<PVector> get3dBezierPoints(PVector anchor1, PVector control1, PVector control2, PVector anchor2){
     int steps = 2 + int(10 * controls.cp5.getController("curveFidelity").getValue()); // need minimum of 2 segments;
@@ -255,18 +282,18 @@ public class OffscreenCanvas {
   }
 
   int offscreenPoints(PVector point1, PVector point2){
-    if (    (point1.x >= offscreenCanvasMargin && point1.x <= graphics.width-offscreenCanvasMargin && point1.y >= offscreenCanvasMargin && point1.y <= graphics.height-offscreenCanvasMargin)
-         && (point2.x >= offscreenCanvasMargin && point2.x <= graphics.width-offscreenCanvasMargin && point2.y >= offscreenCanvasMargin && point2.y <= graphics.height-offscreenCanvasMargin) )  {
+    if (    (point1.x >= margin && point1.x <= graphics.width-margin && point1.y >= margin && point1.y <= graphics.height-margin)
+         && (point2.x >= margin && point2.x <= graphics.width-margin && point2.y >= margin && point2.y <= graphics.height-margin) )  {
       // both of the two points are inside the margins
       return 0;
-    } else if (    (point1.x >= offscreenCanvasMargin && point1.x <= graphics.width-offscreenCanvasMargin && point1.y >= offscreenCanvasMargin && point1.y <= graphics.height-offscreenCanvasMargin)
-         || (point2.x >= offscreenCanvasMargin && point2.x <= graphics.width-offscreenCanvasMargin && point2.y >= offscreenCanvasMargin && point2.y <= graphics.height-offscreenCanvasMargin) )  {
+    } else if (    (point1.x >= margin && point1.x <= graphics.width-margin && point1.y >= margin && point1.y <= graphics.height-margin)
+         || (point2.x >= margin && point2.x <= graphics.width-margin && point2.y >= margin && point2.y <= graphics.height-margin) )  {
       // one or the other of the two points are inside the margins
 
-      if ((point1.x <= offscreenCanvasMargin && point2.x > offscreenCanvasMargin) || (point2.x <= graphics.width-offscreenCanvasMargin && point1.x > graphics.width-offscreenCanvasMargin)) return 1;
-      if ((point2.x <= offscreenCanvasMargin && point1.x > offscreenCanvasMargin) || (point1.x <= graphics.width-offscreenCanvasMargin && point2.x > graphics.width-offscreenCanvasMargin)) return 2;
-      if ((point1.y <= offscreenCanvasMargin && point2.y > offscreenCanvasMargin) || (point2.y <= graphics.height-offscreenCanvasMargin && point1.y > graphics.height-offscreenCanvasMargin)) return 1;
-      if ((point2.y <= offscreenCanvasMargin && point1.y > offscreenCanvasMargin) || (point1.y <= graphics.height-offscreenCanvasMargin && point2.y > graphics.height-offscreenCanvasMargin)) return 2;
+      if ((point1.x <= margin && point2.x > margin) || (point2.x <= graphics.width-margin && point1.x > graphics.width-margin)) return 1;
+      if ((point2.x <= margin && point1.x > margin) || (point1.x <= graphics.width-margin && point2.x > graphics.width-margin)) return 2;
+      if ((point1.y <= margin && point2.y > margin) || (point2.y <= graphics.height-margin && point1.y > graphics.height-margin)) return 1;
+      if ((point2.y <= margin && point1.y > margin) || (point1.y <= graphics.height-margin && point2.y > graphics.height-margin)) return 2;
 
       return -1;
     } else {
@@ -286,7 +313,7 @@ public class OffscreenCanvas {
     float y2 = point2.y;
 
     // left side of paper 
-    PVector intersection = intersectionOf2Lines(x1, y1, x2, y2, offscreenCanvasMargin, offscreenCanvasMargin, offscreenCanvasMargin, graphics.height - offscreenCanvasMargin);
+    PVector intersection = intersectionOf2Lines(x1, y1, x2, y2, margin, margin, margin, graphics.height - margin);
 
     if (intersection!=null) {
       numIntersections++;
@@ -300,7 +327,7 @@ public class OffscreenCanvas {
     }
 
     // right side of paper 
-    intersection = intersectionOf2Lines(x1, y1, x2, y2, graphics.width - offscreenCanvasMargin, offscreenCanvasMargin, graphics.width - offscreenCanvasMargin, graphics.height - offscreenCanvasMargin);
+    intersection = intersectionOf2Lines(x1, y1, x2, y2, graphics.width - margin, margin, graphics.width - margin, graphics.height - margin);
     if (intersection!=null) {
       numIntersections++;
       if (x1<x2){
@@ -313,7 +340,7 @@ public class OffscreenCanvas {
     }
 
     // top of paper
-    intersection = intersectionOf2Lines(x1, y1, x2, y2, offscreenCanvasMargin, offscreenCanvasMargin, graphics.width - offscreenCanvasMargin, offscreenCanvasMargin);
+    intersection = intersectionOf2Lines(x1, y1, x2, y2, margin, margin, graphics.width - margin, margin);
     if (intersection!=null) {
       numIntersections++;
       if (y1<y2){
@@ -326,7 +353,7 @@ public class OffscreenCanvas {
     }
 
     // bottom of paper 
-    intersection = intersectionOf2Lines(x1, y1, x2, y2, offscreenCanvasMargin, graphics.height - offscreenCanvasMargin, graphics.width - offscreenCanvasMargin, graphics.height - offscreenCanvasMargin);
+    intersection = intersectionOf2Lines(x1, y1, x2, y2, margin, graphics.height - margin, graphics.width - margin, graphics.height - margin);
     if (intersection !=null){
       numIntersections++;
       if (y1<y2){
@@ -368,15 +395,15 @@ public class OffscreenCanvas {
     graphics.beginShape();
     graphics.noFill();
     
-    float sigWidth = (graphics.width - 2*offscreenCanvasMargin )/25;
+    float sigWidth = (graphics.width - 2*margin )/25;
     
     float w = sigWidth/3;
     float h = w*1.75;
     float k = w/4;
     float r = w/3;
     
-    float x = graphics.width - offscreenCanvasMargin - sigWidth;
-    float y = graphics.height - offscreenCanvasMargin - h;
+    float x = graphics.width - margin - sigWidth;
+    float y = graphics.height - margin - h;
    
     //l
     graphics.vertex(x,y-h);

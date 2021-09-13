@@ -8,43 +8,17 @@ public class Parameters {
     cp5 = new ControlP5(parent);
 
     manager= new ParameterManager(cp5);
-    init();
+    PVector pos = requiredParameters();
+    
+    customParameters(pos);
   }
-
-  void init(){
-    int xBase = 810;
-    int yBase = 10;
+  void customParameters(PVector pos){
+    int xBase = int(pos.x);
+    int yBase = int(pos.y);
     int xPos = xBase;
     int yPos = yBase;
     int yOffset = 25;
     int xOffset = 130;
-
-    cp5.addSlider("sceneScale")
-      .setLabel("scale")
-      .setPosition(xPos, yPos)
-      .setWidth(100)
-      .setRange(.1,1)
-      .setValue(1)
-     ;
-    yPos+=yOffset;
-
-    cp5.addSlider("camRotationX")
-      .setLabel("camera rotation X")
-      .setPosition(xPos, yPos)
-      .setWidth(100)
-      .setRange(-PI,PI)
-      .setValue(-PI/4)
-     ;
-    yPos+=yOffset;
-
-    cp5.addSlider("camRotationY")
-      .setLabel("camera rotation Y")
-      .setPosition(xPos, yPos)
-      .setWidth(100)
-      .setRange(-PI,PI)
-      .setValue(PI/4)
-     ;
-    yPos+=yOffset;
 
     cp5.addSlider("numCellsX")
       .setLabel("cells in X")
@@ -124,20 +98,52 @@ public class Parameters {
     .setSize(50,10)
     .setValue(true)
     ;
+  }
+  
+  PVector requiredParameters(){
+    int xBase = 810;
+    int yBase = 10;
+    int xPos = xBase;
+    int yPos = yBase;
+    int yOffset = 25;
+    int xOffset = 130;
 
-    xPos=xBase;
-    yPos+=yOffset;
-
-    cp5.addToggle("drawBoundingBox")
-     .setLabel("draw bounding boxes")
-     .setPosition(xPos, yPos)
-     .setSize(50,10)
-     .setValue(false)
+    cp5.addSlider("sceneScale")
+      .setLabel("scale")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(.1,1)
+      .setValue(1)
      ;
-   xPos+=xOffset;
-
     yPos+=yOffset;
 
+    cp5.addSlider("camRotationX")
+      .setLabel("camera rot X")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(-PI,PI)
+      .setValue(-PI/4)
+     ;
+    xPos+=xOffset+50;
+
+    cp5.addSlider("camRotationY")
+      .setLabel("camera rot Y")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(-PI,PI)
+      .setValue(PI/4)
+     ;
+     
+    xPos+=xOffset+50;
+
+    cp5.addSlider("camRotationZ")
+      .setLabel("camera rot Z")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(-PI,PI)
+      .setValue(0)
+     ;
+    
     yPos+=yOffset;
     xPos=xBase;
     cp5.addToggle("ortho")
@@ -146,5 +152,9 @@ public class Parameters {
      .setSize(50,10)
      .setValue(true)
      ;
+     
+     yPos+=2*yOffset;
+     xPos=xBase;
+     return new PVector(xPos, yPos);
   }
 }

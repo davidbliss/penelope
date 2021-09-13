@@ -11,14 +11,15 @@ public class Drawing{
 
   Drawing(Parameters parameters){
     this.parameters = parameters;
-    init();
   }
 
-  public void init(){
-
+  public void generate(){
+    makeChains();
   }
 
-  public void draw(OffscreenCanvas canvas){
+  public void draw(PenelopeCanvas canvas){
+    canvas.preDraw3d();
+    
     canvas.graphics.beginDraw();
     canvas.graphics.stroke(color(0), 255);
     canvas.graphics.strokeWeight(3);
@@ -34,7 +35,9 @@ public class Drawing{
     // draw a 3d bezier
     //canvas.draw3dBezier(new PVector(-1000, 0, 0),new PVector(10, -10, 10),new PVector(90, -90, 90),new PVector(100, 100, 100));
     //canvas.draw3dBezier(new PVector(100,500,100),new PVector(90, -90, 90),new PVector(10, -10, 10),new PVector(-1000, 500, 100));
-    //drawChains(canvas);
+    
+    // draw chains
+    drawChains(canvas);
 
     //canvas.drawBox(18, false);
     //canvas.drawBox(180, true);
@@ -65,6 +68,7 @@ public class Drawing{
     
     canvas.sign();
     canvas.graphics.endDraw();
+    canvas.postDraw3d();
   }
 
   public Cell getRandomCell(){
@@ -138,7 +142,7 @@ public class Drawing{
     }
   }
 
-  public void drawChains(OffscreenCanvas canvas){
+  public void drawChains(PenelopeCanvas canvas){
     // draw a bunch of curves
     for (int ii = 0; ii<chains.size(); ii++){
       ArrayList<Cell>chain = chains.get(ii);
@@ -155,7 +159,7 @@ public class Drawing{
   }
   
 
-  void drawBoxTile(OffscreenCanvas canvas, float size, boolean top, boolean left, boolean right, boolean bottom, boolean oddRow){
+  void drawBoxTile(PenelopeCanvas canvas, float size, boolean top, boolean left, boolean right, boolean bottom, boolean oddRow){
     // make 8 vertexes to map to 8 2d points
     PVector p0 = new PVector(-size/2,-3*size/2,-size/2);
     PVector p1 = new PVector(-size/2,-size/2,-size/2);

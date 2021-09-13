@@ -2,20 +2,15 @@
 
 import processing.svg.*;
 
-Parameters parameters; // drawing parameters that can be shuffled
-Controls controls;
+Parameters parameters;  // drawing parameters that can be shuffled
+Controls controls;      // drawing controls and parameters that are not shuffled
 
 Drawing drawing;
 
-float camRotationX;
-float camRotationY;
+PenelopeCanvas preview;
 
-OffscreenCanvas preview;
-
-int canvasWidth;
-int canvasHeight;
-
-int offscreenCanvasMargin;
+int onscreenCanvasWidth;
+int onscreenCanvasHeight;
 
 void setup() {
   size(1400,800,P3D); // 1400,800 fits well on my laptop
@@ -27,93 +22,82 @@ void setup() {
   init();
 }
 
+// do things here that need to be done each time drawing is regenerated
 void init(){
-  // things that may change when controls are updated
-  float scaleAdjust = 71.95;
+  preview = new PenelopeCanvas(parameters, controls);
 
-  // calculate the height and width of the offscreen bits.
-  int offscreenCanvasWidth = int(controls.cp5.getController("pageWidth").getValue() * scaleAdjust);
-  int offscreenCanvasHeight = int(controls.cp5.getController("pageHeight").getValue() * scaleAdjust);
-  offscreenCanvasMargin = int(controls.cp5.getController("margin").getValue() * scaleAdjust);
-
-  preview = new OffscreenCanvas(offscreenCanvasWidth, offscreenCanvasHeight);
-
-  // calculate the onscreen width and height
+  // calculate the onscreen canvas width and height
   float scaler;
   if(preview.graphics.width<preview.graphics.height){
     scaler =  float(height) / preview.graphics.height;
   } else {
     scaler =  float(height) / preview.graphics.width;
   }
-  canvasWidth = int(preview.graphics.width * scaler);
-  canvasHeight = int(preview.graphics.height * scaler);
-
+  onscreenCanvasWidth = int(preview.graphics.width * scaler);
+  onscreenCanvasHeight = int(preview.graphics.height * scaler);
 
   // initial OffscreenCanvas background is not drawn, so we draw it manually here.
   fill(255);
-  rect(0,0,canvasWidth,canvasHeight);
+  rect(0,0,onscreenCanvasWidth,onscreenCanvasHeight);
 
   // create the drawing object
   drawing = new Drawing(parameters);
 
   // initial drawing
-  drawOnce();
+  initDrawing();
 }
 
 void draw(){
   // draw needs to be here even if empty
 }
 
-void drawOnce(){
-  // drawing specific things
-
-  // make new chains
-  drawing.makeChains();
+void initDrawing(){
+  // generate the drawing
+  drawing.generate();
 
   // draw it offscreen
-  drawDrawing(preview);
+  drawing.draw(preview);
 
   // draw the preview to the screen.
-  image(preview.graphics, 0, 0, canvasWidth, canvasHeight);
-}
-
-// this is used to draw to screen and draw to offscreen SVG when saving... must keep separate from drawOnce command
-void drawDrawing(OffscreenCanvas canvas){
-  canvas.preDraw3d();
-  drawing.draw(canvas);
-  canvas.postDraw3d();
+  image(preview.graphics, 0, 0, onscreenCanvasWidth, onscreenCanvasHeight);
 }
 
 // FUNCTIONS FOR CONTROLS
-
+// TODO: would be nice to move these to controls but CP5 is being difficult
 void frontCam(){
+  println("front cam");
   parameters.cp5.getController("camRotationX").setValue(0);
   parameters.cp5.getController("camRotationY").setValue(0);
-}
-
-void sideCam(){
-  parameters.cp5.getController("camRotationX").setValue(PI/2);
-  parameters.cp5.getController("camRotationY").setValue(0);
+  parameters.cp5.getController("camRotationZ").setValue(0);
 }
 
 void topCam(){
   parameters.cp5.getController("camRotationX").setValue(0);
   parameters.cp5.getController("camRotationY").setValue(PI/2);
+  parameters.cp5.getController("camRotationZ").setValue(0);
+}
+
+void sideCam(){
+  parameters.cp5.getController("camRotationX").setValue(0);
+  parameters.cp5.getController("camRotationY").setValue(0);
+  parameters.cp5.getController("camRotationZ").setValue(PI/2);
 }
 
 void angleCam(){
   parameters.cp5.getController("camRotationX").setValue(-PI/4);
   parameters.cp5.getController("camRotationY").setValue(PI/4);
+  parameters.cp5.getController("camRotationZ").setValue(0);
 }
 
+// TOODO: move to Canvas?
 void saveSnapshot(){
   String name = "output/"+month()+"."+day()+"."+year()+"_"+hour()+"-"+minute()+"-"+second();
   preview.saveImage(name);
   parameters.manager.saveValues(name);
 
   // make an svg with the correct path and draw to it
-  OffscreenCanvas svg = new OffscreenCanvas(createGraphics(preview.graphics.width, preview.graphics.height, SVG, name+".svg"));
-  drawDrawing(svg);
+  PenelopeCanvas svg = new PenelopeCanvas(createGraphics(preview.graphics.width, preview.graphics.height, SVG, name+".svg"), parameters, controls);
+  drawing.draw(svg);
 }
 
 void randomizeParameters(){
@@ -125,7 +109,7 @@ void regenerate(){
   if(preview!=null) {
     init();
     preview.clear();
-    drawing.init();
-    drawOnce();
+    drawing.generate();
+    initDrawing();
   }
 }
