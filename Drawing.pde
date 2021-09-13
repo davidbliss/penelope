@@ -11,7 +11,9 @@ public class Drawing{
     
   }
 
-  public void draw(PenelopeCanvas canvas){
+  public void draw(ArrayList<PenelopeCanvas> layers){
+    
+    PenelopeCanvas canvas = layers.get(0);
     canvas.preDraw3d();
     
     canvas.graphics.beginDraw();
@@ -41,9 +43,18 @@ public class Drawing{
    
     canvas.graphics.stroke(color(0));
     
-    canvas.sign();
+    
     canvas.graphics.endDraw();
     canvas.postDraw3d();
+    
+    PenelopeCanvas sig = layers.get(1);
+    sig.graphics.beginDraw();
+    sig.graphics.stroke(color(0), 255);
+    sig.graphics.strokeWeight(3);
+    sig.graphics.strokeCap(ROUND);
+    sig.graphics.noFill();
+    sig.sign();
+    sig.graphics.endDraw();
   }
 
   void drawBoxTile(PenelopeCanvas canvas, float size, boolean top, boolean left, boolean right, boolean bottom, boolean oddRow){

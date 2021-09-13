@@ -1,18 +1,12 @@
-// note, I tried to make this flexible enough to work for SVG and PDF,
-// but ran into numerous errors that make me thing that if you want to use SVG or PDF,
-// it does not make sense to do so in an offscreen canvas.
-
-// TODO: BUG, PNG image is not being saved until it has been regenerated
-
 public class PenelopeCanvas {
   PGraphics graphics;
   PGraphics offscreen3d;
-  
+
   Parameters parameters; // drawing parameters that can be shuffled
   Controls controls;
-  
+
   float scaleAdjust = 71.95;
-  
+
   int margin;
   float camRotationX;
   float camRotationY;
@@ -24,7 +18,7 @@ public class PenelopeCanvas {
     int width = int(controls.cp5.getController("pageWidth").getValue()*scaleAdjust);
     int height = int(controls.cp5.getController("pageHeight").getValue()*scaleAdjust);
     init();
-    
+
     graphics = createGraphics(width, height, P3D);
     offscreen3d = createGraphics(width, height, P3D);
   }
@@ -33,15 +27,15 @@ public class PenelopeCanvas {
     this.parameters = parameters;
     this.controls = controls;
     init();
-    
+
     graphics = svg;
     offscreen3d = createGraphics(svg.width, svg.height, P3D);
   }
-  
+
   void init(){
     // calculate the height and width of the offscreen bits.
     margin = int(controls.cp5.getController("margin").getValue()*scaleAdjust);
-    
+
     camRotationX = parameters.cp5.getController("camRotationX").getValue();
     camRotationY = parameters.cp5.getController("camRotationY").getValue();
     camRotationZ = parameters.cp5.getController("camRotationZ").getValue();
@@ -52,7 +46,7 @@ public class PenelopeCanvas {
     graphics.beginDraw();
     graphics.background(255);
     graphics.endDraw();
-    
+
     offscreen3d.clear();
   }
 
@@ -93,7 +87,7 @@ public class PenelopeCanvas {
   void drawBox(float size){
     drawBox(size, true);
   }
-  
+
   void drawBox(float size, boolean isWireframe){
     // make 8 vertexes to map to 8 2d points
     PVector p0 = new PVector(-size/2,-3*size/2,-size/2);
@@ -128,7 +122,7 @@ public class PenelopeCanvas {
       points.add(p82d);
       points.add(p42d);
       drawCroppedPolyline(points);
-  
+
       points = new ArrayList<PVector>();
       points.add(p72d);
       points.add(p32d);
@@ -144,27 +138,27 @@ public class PenelopeCanvas {
       points.add(p82d);
       points.add(p72d);
       drawCroppedPolyline(points);
-  
+
       points = new ArrayList<PVector>();
       points.add(p12d);
       points.add(p52d);
       points.add(p72d);
       points.add(p32d);
       drawCroppedPolyline(points);
-  
+
       points = new ArrayList<PVector>();
       points.add(p52d);
       points.add(p62d);
       points.add(p22d);
       drawCroppedPolyline(points);
-  
+
       points = new ArrayList<PVector>();
       points.add(p62d);
       points.add(p82d);
       drawCroppedPolyline(points);
     }
   }
-  
+
   ArrayList<PVector> get3dBezierPoints(PVector anchor1, PVector control1, PVector control2, PVector anchor2){
     int steps = 2 + int(10 * controls.cp5.getController("curveFidelity").getValue()); // need minimum of 2 segments;
 
@@ -193,7 +187,7 @@ public class PenelopeCanvas {
   }
 
   // start line cropping utilities.
-  
+
   void drawCroppedPolylines(ArrayList<ArrayList<PVector>> lines){
     graphics.beginShape();
     for (ArrayList<PVector>points : lines){
@@ -201,7 +195,7 @@ public class PenelopeCanvas {
     }
     graphics.endShape();
   }
-  
+
   void drawCroppedPolyline(ArrayList<PVector> points){
     drawCroppedPolyline(points, true);
   }
@@ -245,7 +239,7 @@ public class PenelopeCanvas {
               if (offScreenPoints == 2 || offScreenPoints == 3 ){
                 // if you have only drawn 2 vertex before being cropped, they will not show up on screen without third, so duplicate last.
                 if (p==1) graphics.vertex(previousX, previousY);
-                
+
                 graphics.endShape();
                 if(isStandalone==false) graphics.beginShape();
 
@@ -256,7 +250,7 @@ public class PenelopeCanvas {
             } else {
               // if you have only drawn 2 vertex before being cropped, they will not show up on screen without third, so duplicate last.
               if (p==1) graphics.vertex(previousX, previousY);
-              
+
               graphics.endShape();
               if(isStandalone==false) graphics.beginShape();
 
@@ -312,7 +306,7 @@ public class PenelopeCanvas {
     float x2 = point2.x;
     float y2 = point2.y;
 
-    // left side of paper 
+    // left side of paper
     PVector intersection = intersectionOf2Lines(x1, y1, x2, y2, margin, margin, margin, graphics.height - margin);
 
     if (intersection!=null) {
@@ -326,7 +320,7 @@ public class PenelopeCanvas {
       }
     }
 
-    // right side of paper 
+    // right side of paper
     intersection = intersectionOf2Lines(x1, y1, x2, y2, graphics.width - margin, margin, graphics.width - margin, graphics.height - margin);
     if (intersection!=null) {
       numIntersections++;
@@ -352,7 +346,7 @@ public class PenelopeCanvas {
       }
     }
 
-    // bottom of paper 
+    // bottom of paper
     intersection = intersectionOf2Lines(x1, y1, x2, y2, margin, graphics.height - margin, graphics.width - margin, graphics.height - margin);
     if (intersection !=null){
       numIntersections++;
@@ -389,47 +383,47 @@ public class PenelopeCanvas {
       return null;
     }
   }
-  
-  // start signature 
+
+  // start signature
   void sign(){
     graphics.beginShape();
     graphics.noFill();
-    
+
     int sigWidth=30;
-    
+
     float w = sigWidth/3;
     float h = w*1.75;
     float k = w/4;
     float r = w/3;
-    
+
     float x = graphics.width - margin - sigWidth;
     float y = graphics.height - margin - h;
-   
+
     //l
     graphics.vertex(x,y-h);
     //vertex(x,y+w/2-r);
     addArcVertexes(x+r, y+w/2-r, r, PI,HALF_PI);
     x += r;
-    
+
     //o
     addArcVertexes(x+w/2, y, w/2, HALF_PI, -3*HALF_PI);
     x += w+k;
-    
+
     //p
     addArcVertexes(x+w/2, y, w/2, HALF_PI, -2*HALF_PI);
     graphics.vertex(x,y);
     graphics.vertex(x,y+h);
-    
+
     graphics.endShape();
   }
-  
+
   void addArcVertexes(float x, float y, float r, float start, float end){
-    
+
     float arcLength = end - start;
     float segmentLength = QUARTER_PI/3;
     if(arcLength<0) segmentLength *= -1;
     int numSegments = abs(ceil(arcLength / segmentLength));
-    
+
     for (int i = 0; i <= numSegments; i++){
        float thisX = x + r * cos(start+i*segmentLength);
        float thisY = y + r * sin(start+i*segmentLength);
