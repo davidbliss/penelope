@@ -1,0 +1,6 @@
+slider, camRotationX: -0.78539824
+slider, camRotationY: 0.78539824
+slider, camRotationZ: 0.0
+slider, sceneScale: 1.0
+toggle, ortho: 1.0
+

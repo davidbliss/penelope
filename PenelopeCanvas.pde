@@ -395,7 +395,7 @@ public class PenelopeCanvas {
     graphics.beginShape();
     graphics.noFill();
     
-    float sigWidth = (graphics.width - 2*margin )/25;
+    int sigWidth=30;
     
     float w = sigWidth/3;
     float h = w*1.75;
