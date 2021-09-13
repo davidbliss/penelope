@@ -21,20 +21,19 @@ public class Drawing{
     canvas.graphics.noFill();
     
     float boxSize = 162.5;
-    int numCols = 6;
-    int numRows = 9;
+    int numCols = int(parameters.cp5.getController("numCols").getValue()) + 1; //6;
+    int numRows = int(parameters.cp5.getController("numRows").getValue()) + 1; //9;
+    float zShift = parameters.cp5.getController("offsetZ").getValue();
     
     canvas.graphics.stroke(color(255,0,0));
     
-    canvas.offscreen3d.translate(-boxSize*numCols/2, -boxSize*(numRows/2+4), -boxSize*numCols/2);
+    canvas.offscreen3d.translate(-boxSize*numCols/2, -boxSize*(numRows-1)*zShift, -boxSize*numCols/2);
     
     canvas.offscreen3d.pushMatrix();
     for (int r = 0; r < numRows; r++){
       canvas.offscreen3d.translate(0, boxSize, boxSize);
       for (int c = 0; c < numCols; c++){
-        
         drawBoxTile(canvas, boxSize, r==0, c==0, c==numCols-1, r==numRows-1, r%2==1);
-        
         canvas.offscreen3d.translate(boxSize, 0, boxSize);
       }
       canvas.offscreen3d.translate(-boxSize*(numCols+((r+1)%2)), 0, -boxSize*(numCols+((r+1)%2)));

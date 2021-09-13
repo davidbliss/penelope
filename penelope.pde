@@ -16,7 +16,7 @@ void setup() {
   size(1400,800,P3D); // 1400,800 fits well on my laptop
   background(25);
 
-  parameters = new Parameters(this);
+  parameters = new CubeParameters(this);
   controls = new Controls(this);
 
   init();
