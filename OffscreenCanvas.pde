@@ -362,4 +362,51 @@ public class OffscreenCanvas {
       return null;
     }
   }
+  
+  // start signature 
+  void sign(){
+    graphics.beginShape();
+    graphics.noFill();
+    
+    float sigWidth = (graphics.width - 2*offscreenCanvasMargin )/25;
+    
+    float w = sigWidth/3;
+    float h = w*1.75;
+    float k = w/4;
+    float r = w/3;
+    
+    float x = graphics.width - offscreenCanvasMargin - sigWidth;
+    float y = graphics.height - offscreenCanvasMargin - h;
+   
+    //l
+    graphics.vertex(x,y-h);
+    //vertex(x,y+w/2-r);
+    addArcVertexes(x+r, y+w/2-r, r, PI,HALF_PI);
+    x += r;
+    
+    //o
+    addArcVertexes(x+w/2, y, w/2, HALF_PI, -3*HALF_PI);
+    x += w+k;
+    
+    //p
+    addArcVertexes(x+w/2, y, w/2, HALF_PI, -2*HALF_PI);
+    graphics.vertex(x,y);
+    graphics.vertex(x,y+h);
+    
+    graphics.endShape();
+  }
+  
+  void addArcVertexes(float x, float y, float r, float start, float end){
+    
+    float arcLength = end - start;
+    float segmentLength = QUARTER_PI/3;
+    if(arcLength<0) segmentLength *= -1;
+    int numSegments = abs(ceil(arcLength / segmentLength));
+    
+    for (int i = 0; i <= numSegments; i++){
+       float thisX = x + r * cos(start+i*segmentLength);
+       float thisY = y + r * sin(start+i*segmentLength);
+       graphics.vertex(thisX, thisY);
+    }
+  }
 }

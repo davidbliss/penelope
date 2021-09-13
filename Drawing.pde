@@ -49,22 +49,21 @@ public class Drawing{
     canvas.offscreen3d.translate(-boxSize*numCols/2, -boxSize*(numRows/2+2.2), -boxSize*numCols/2);
     
     //canvas.offscreen3d.pushMatrix();
-    for (int r = 0; r < numRows; r++){
-      canvas.offscreen3d.translate(0, boxSize, boxSize);
-      for (int c = 0; c < numCols; c++){
+    //for (int r = 0; r < numRows; r++){
+    //  canvas.offscreen3d.translate(0, boxSize, boxSize);
+    //  for (int c = 0; c < numCols; c++){
         
-        drawBoxTile(canvas, boxSize, r==0, c==0, c==numCols-1, r==numRows-1, r%2==1);
+    //    drawBoxTile(canvas, boxSize, r==0, c==0, c==numCols-1, r==numRows-1, r%2==1);
         
-        canvas.offscreen3d.translate(boxSize, 0, boxSize);
-      }
-      canvas.offscreen3d.translate(-boxSize*(numCols+((r+1)%2)), 0, -boxSize*(numCols+((r+1)%2)));
-    }
+    //    canvas.offscreen3d.translate(boxSize, 0, boxSize);
+    //  }
+    //  canvas.offscreen3d.translate(-boxSize*(numCols+((r+1)%2)), 0, -boxSize*(numCols+((r+1)%2)));
+    //}
     
-    
-      
     
     //canvas.drawCroppedLine(new PVector(0,200), new PVector(1600,300));
-
+    
+    canvas.sign();
     canvas.graphics.endDraw();
   }
 
