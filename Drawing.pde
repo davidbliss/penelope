@@ -49,7 +49,7 @@ public class Drawing{
     
     PenelopeCanvas sig = layers.get(1);
     sig.graphics.beginDraw();
-    sig.graphics.stroke(color(0), 255);
+    sig.graphics.stroke(colors.colors[1], 255);
     sig.graphics.strokeWeight(3);
     sig.graphics.strokeCap(ROUND);
     sig.graphics.noFill();

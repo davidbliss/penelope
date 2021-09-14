@@ -5,7 +5,6 @@ public class Colors{
                     {
                     #FF2F0A,
                     #FF890A,
-                    #FFC60A,
                     #FFE70A,
                     };
 
