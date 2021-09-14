@@ -2,6 +2,7 @@ import processing.svg.*;
 
 Parameters parameters;  // drawing parameters that can be shuffled
 Controls controls;      // drawing controls and parameters that are not shuffled
+Colors colors;
 
 Drawing drawing;
 
@@ -17,6 +18,7 @@ void setup() {
 
   parameters = new CubeParameters(this);
   controls = new Controls(this);
+  colors = new Colors();
   
   init();
 }

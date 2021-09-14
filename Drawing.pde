@@ -17,7 +17,7 @@ public class Drawing{
     canvas.preDraw3d();
     
     canvas.graphics.beginDraw();
-    canvas.graphics.stroke(color(0), 255);
+    canvas.graphics.stroke(colors.colors[0], 255);
     canvas.graphics.strokeWeight(3);
     canvas.graphics.strokeCap(ROUND);
     canvas.graphics.noFill();
