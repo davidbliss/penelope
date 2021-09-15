@@ -12,6 +12,8 @@ int numCanvases = 3;
 int onscreenCanvasWidth;
 int onscreenCanvasHeight;
 
+PImage loadedImage;
+
 void setup() {
   size(1400,800,P3D); // 1400,800 fits well on my laptop
   background(25);
@@ -123,4 +125,18 @@ void randomizeParameters(){
 
 void regenerate(){  
   init();
+}
+
+void loadFromFile(){
+  selectInput("Select a file to process:", "loadImageFromDisk");
+}
+
+void loadImageFromDisk(File selection){
+  if (selection == null) {
+    println("dialog closed or canceled.");
+  } else {
+    String path = selection.getAbsolutePath();
+    println("loading path " + path);
+    loadedImage = loadImage(path); 
+  }
 }

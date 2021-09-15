@@ -110,6 +110,13 @@ public class Controls {
       .setPosition(xPos, yPos)
       .setSize(100,20)
       ;
+    
+    xPos+=xOffset;
+    cp5.addButton("loadFromFile")
+     .setLabel("load image")
+     .setPosition(xPos, yPos)
+     .setSize(100,20)
+     ;
     yPos+=yOffset;
   }
 
