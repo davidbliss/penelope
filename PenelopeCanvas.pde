@@ -187,6 +187,14 @@ public class PenelopeCanvas {
   }
 
   // start line cropping utilities.
+  
+  void drawPolyline(ArrayList<PVector> points){
+    graphics.beginShape();
+    for (PVector point : points){
+      graphics.vertex(point.x, point.y);
+    }
+    graphics.endShape();
+  }
 
   void drawCroppedPolylines(ArrayList<ArrayList<PVector>> lines){
     graphics.beginShape();
