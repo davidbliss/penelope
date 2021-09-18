@@ -102,10 +102,19 @@ void angleCam(){
 
 void saveSnapshot(){
   ArrayList<PenelopeCanvas> svgs = new ArrayList<PenelopeCanvas>();
-  
-  drawing.draw(canvases);
-  
   String name = "output/"+month()+"."+day()+"."+year()+"_"+hour()+"-"+minute()+"-"+second();
+  
+  //drawing.draw(canvases);
+  
+  ArrayList<PenelopeCanvas> proof = new ArrayList<PenelopeCanvas>();
+  PenelopeCanvas pCanvas = new PenelopeCanvas(parameters, controls);
+  pCanvas.graphics.beginDraw(); // entice it into immediate action
+  pCanvas.graphics.endDraw();
+  proof.add(pCanvas);
+  
+  drawing.draw(proof);
+  proof.get(0).saveImage(name+"-composite");
+  
   int layerNum = 1;
   for (PenelopeCanvas layer : canvases){
     layer.saveImage(name+"-layer-"+layerNum);

@@ -43,18 +43,19 @@ public class Drawing{
    
     canvas.graphics.stroke(color(0));
     
+    if (layers.size()>1){
+      canvas.graphics.endDraw();
+      canvas.postDraw3d();
+      canvas = layers.get(1);
+    }
     
+    canvas.graphics.beginDraw();
+    canvas.graphics.stroke(colors.colors[1], 255);
+    canvas.graphics.strokeWeight(3);
+    canvas.graphics.strokeCap(ROUND);
+    canvas.graphics.noFill();
+    canvas.sign();
     canvas.graphics.endDraw();
-    canvas.postDraw3d();
-    
-    PenelopeCanvas sig = layers.get(1);
-    sig.graphics.beginDraw();
-    sig.graphics.stroke(colors.colors[1], 255);
-    sig.graphics.strokeWeight(3);
-    sig.graphics.strokeCap(ROUND);
-    sig.graphics.noFill();
-    sig.sign();
-    sig.graphics.endDraw();
   }
 
   void drawBoxTile(PenelopeCanvas canvas, float size, boolean top, boolean left, boolean right, boolean bottom, boolean oddRow){
