@@ -88,7 +88,7 @@ public class Drawing{
       points.add(p82d);
       points.add(p72d);
       points.add(p52d);
-      canvas.drawCroppedPolyline(points);
+      canvas.drawPolyline(points);
     } else if (top==true && left==false && right==false && bottom==false) {
       //println("top row");
       ArrayList<PVector> points = new ArrayList<PVector>();
@@ -98,7 +98,7 @@ public class Drawing{
       points.add(p82d);
       points.add(p72d);
       points.add(p52d);
-      canvas.drawCroppedPolyline(points);
+      canvas.drawPolyline(points);
     } else if (left==true && right==false && bottom==false && oddRow==false) {
       //println("first column, evenRow");
       ArrayList<PVector> points = new ArrayList<PVector>();
@@ -106,13 +106,13 @@ public class Drawing{
       points.add(p42d);
       points.add(p82d);
       points.add(p72d);
-      canvas.drawCroppedPolyline(points);
+      canvas.drawPolyline(points);
     } else if (left==true && right==false && bottom==false && oddRow==true) {
       //println("first column, oddRow");
       ArrayList<PVector> points = new ArrayList<PVector>();
       points.add(p42d);
       points.add(p82d);
-      canvas.drawCroppedPolyline(points);
+      canvas.drawPolyline(points);
     } else if (top==true && left==false && right==true && bottom==false) {
       //println("last column, first row");
       ArrayList<PVector> points = new ArrayList<PVector>();
@@ -120,7 +120,7 @@ public class Drawing{
       points.add(p32d);
       points.add(p72d);
       points.add(p52d);
-      canvas.drawCroppedPolyline(points);
+      canvas.drawPolyline(points);
     } else if (left==false && right==true && bottom==false && oddRow==false) {
       //println("last column, even row");
       ArrayList<PVector> points = new ArrayList<PVector>();
@@ -129,7 +129,7 @@ public class Drawing{
       points.add(p32d);
       points.add(p72d);
       points.add(p52d);
-      canvas.drawCroppedPolyline(points);
+      canvas.drawPolyline(points);
     } else if (left==false && right==true && bottom==false && oddRow==true) {
       //println("last column, odd row");
       ArrayList<PVector> points = new ArrayList<PVector>();
@@ -140,13 +140,13 @@ public class Drawing{
       points.add(p82d);
       points.add(p72d);
       points.add(p52d);
-      canvas.drawCroppedPolyline(points);
+      canvas.drawPolyline(points);
     } else if (top==false && left==false && bottom==true) {
       //println("last row");
       ArrayList<PVector> points = new ArrayList<PVector>();
       points.add(p02d);
       points.add(p12d);
-      canvas.drawCroppedPolyline(points);
+      canvas.drawPolyline(points);
     }
   }
 }
