@@ -29,5 +29,57 @@ public class Parameters {
     
     yPos+=yOffset;
     xPos=xBase;
+    
+    cp5.addSlider("sampleScale")
+      .setLabel("sample scale")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,1)
+      .setValue(.5)
+     ;
+    
+    yPos+=yOffset;
+    xPos=xBase;
+
+    cp5.addSlider("threshold0")
+      .setLabel("sample threshold 1")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,100)
+      .setValue(20)
+     ;
+    
+    xPos+=xOffset+50;
+    cp5.addSlider("threshold1")
+      .setLabel("sample threshold 2")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,100)
+      .setValue(50)
+     ;
+    
+    xPos+=xOffset+50;
+    cp5.addSlider("threshold2")
+      .setLabel("sample threshold 3")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,100)
+      .setValue(80)
+     ;
+    
+    yPos+=yOffset;
+    xPos=xBase;
+    
+    // this should be relative to the largest contour
+    cp5.addRange("contourSizeRange")
+      .setLabel("contour size")
+      .setPosition(xPos, yPos)
+      .setWidth(400)
+      .setRange(0,1)
+      .setRangeValues(.001,1)
+     ;
+     
+    yPos+=yOffset;
+    xPos=xBase;
   }
 }

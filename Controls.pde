@@ -1,3 +1,6 @@
+// TODO: possible ideas for future:
+  // break out images controls to include load and basic brightness/contrast controls
+
 public class Controls {
   ControlP5 cp5;
 

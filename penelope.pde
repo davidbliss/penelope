@@ -20,7 +20,7 @@ ColorManager colorManager = new ColorManager();
 GeoUtils geoUtils = new GeoUtils();
 
 PenelopeCanvas canvas;
-Drawing drawing = new Drawing();
+Drawing drawing;
 PImage loadedImage;
 
 int numCanvasLayers = 3;
@@ -35,6 +35,7 @@ void setup() {
   parameters = new Parameters(this);
   controls = new Controls(this);
   canvas = new PenelopeCanvas(this, numCanvasLayers);
+  drawing = new Drawing(this, 3, 0);
   
   drawOnce();
 }
