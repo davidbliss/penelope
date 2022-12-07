@@ -29,6 +29,5 @@ public class Parameters {
     
     yPos+=yOffset;
     xPos=xBase;
-    
   }
 }

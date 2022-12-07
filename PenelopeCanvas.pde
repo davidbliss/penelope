@@ -367,7 +367,7 @@ public class PenelopeCanvas {
           //layers.get(layerNum).addPath(path);
           RShape shape = new RShape();
           shape.addPath(path);
-          if (path !=null && path.getHandles().length>0) layers.get(layerNum).addChild(shape);
+          if (path.getHandles().length>0) layers.get(layerNum).addChild(shape);
           
           processRemainingPoints(points, p, layerNum);
           break;

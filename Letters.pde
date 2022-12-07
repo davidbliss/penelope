@@ -1,5 +1,4 @@
-import geomerative.RPath;
-import geomerative.RShape;
+// TODO: letters are sometimes glitchy (see how y looks), probably a problem with offset 
 
 public class Letters {
   private float w = 10;

@@ -27,45 +27,6 @@ public class GeoUtils {
     return sortedPoints;
   }
   
-  public RShape hatchFill(RShape shape, float _spacing, float _fillPercent, float _detailScale, boolean vertical) {
-    // NOTE: shapes with single lines can't be diff'ed or intersected. Instead we will draw line by line and find our own intersections
-    ArrayList<ArrayList<RPoint>> hatches = new ArrayList<ArrayList<RPoint>>();
-    
-    int maxDim = (vertical==true)? (int)shape.width : (int)shape.height;
-    
-    for (float l=0;l<maxDim;l+=1) {
-      RPoint lineBegin = new RPoint(l,0);
-      RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-100, l, shape.height+100);
-      if (vertical==false) {
-        lineBegin = new RPoint(0,l);
-        cuttingLine = RG.getLine(lineBegin.x-100, lineBegin.y, shape.width+100, l);
-      }
-      
-      RPoint[] points = shape.getIntersections(cuttingLine);
-      
-      if(points!=null) {
-        l+=_spacing-1;
-        // these intersection points are not in order. we have to sort them first.
-        RPoint[] sortedPoints = geoUtils.sortPoints(points,lineBegin,shape.height*shape.width);
-
-        int iterLength = sortedPoints.length;
-        if(sortedPoints.length%2!=0) {
-          println("odd number of points");
-          iterLength = sortedPoints.length-1;
-        }
-        
-        for(int p=0; p<iterLength; p+=2) {
-          // filter out really short lines
-          if(sortedPoints[p].dist(sortedPoints[p+1])>2) {
-            hatches.addAll(geoUtils.subdivideLine(sortedPoints[p], sortedPoints[p+1], _fillPercent, _detailScale));
-          }
-        }
-      }
-    }
-    
-    return pointsToShape(hatches);
-  }
-  
   public RShape hatchFill(RShape shape, float _spacing, boolean vertical) {
     // NOTE: Added to support shapes more generically, might not work in apps using previous hatchFill.
     // This only recognizes holes if the paths are combined as one.
@@ -73,7 +34,7 @@ public class GeoUtils {
     
     int maxDim = (vertical==true)? (int)shape.width : (int)shape.height;
     
-    for (float l=-10;l<maxDim+10;l+=_spacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
+    for (float l=-10; l<maxDim+10; l+=_spacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
       RPoint lineBegin = new RPoint(l,0);
       RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-100, l, shape.width+100);
       if (vertical==false) {

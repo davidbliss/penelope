@@ -1,3 +1,4 @@
+
 Parameters parameters;  // drawing parameters that can be shuffled
 Controls controls;      // drawing controls and parameters that are not shuffled
 ColorManager colorManager = new ColorManager();
@@ -23,6 +24,7 @@ void setup() {
   canvas = new PenelopeCanvas(this, controls, 3);
   
   initDrawing();
+  println("setup complete");
 }
 
 void draw(){
@@ -63,6 +65,6 @@ void setupCanvas(){
 }
 
 void drawCanvas(){
-  canvas.draw(true);
+  canvas.draw();
   image(canvas.graphics, 0, 0, onscreenCanvasWidth, onscreenCanvasHeight);
 }
