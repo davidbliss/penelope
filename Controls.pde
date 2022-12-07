@@ -112,5 +112,7 @@ void regenerate(){
 
 public void controlEvent(ControlEvent theEvent){
   println("controlEvent");
+  
+  // TODO:calling initdrawing directly throws an error on start
   initDrawing();
 }

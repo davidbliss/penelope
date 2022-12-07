@@ -24,7 +24,6 @@ void setup() {
   canvas = new PenelopeCanvas(this, controls, 3);
   
   initDrawing();
-  println("setup complete");
 }
 
 void draw(){

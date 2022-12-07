@@ -27,14 +27,38 @@ public class GeoUtils {
     return sortedPoints;
   }
   
+  public RShape iterativelyFill(RShape _layer, float fillDensity, boolean vertical) {
+    RShape fills = new RShape();
+    _layer.width = width;
+    _layer.height = height;
+    if (_layer.children!=null) {
+      for(RShape child: _layer.children) {
+        fills.addChild(iterativelyFill(child, fillDensity, vertical));
+      }
+    } else {
+      RShape thisfills = hatchFill(_layer, fillDensity, vertical); 
+      thisfills = geoUtils.mergeLines(thisfills,fillDensity*1.25f);
+      if(thisfills.children!=null) {
+        for (RShape child: thisfills.children) {
+          child.setFill("none");
+        }
+      }
+      fills.addChild(thisfills);
+    }
+    
+    return fills;
+  }
+  
   public RShape hatchFill(RShape shape, float _spacing, boolean vertical) {
     // NOTE: Added to support shapes more generically, might not work in apps using previous hatchFill.
     // This only recognizes holes if the paths are combined as one.
     ArrayList<ArrayList<RPoint>> hatches = new ArrayList<ArrayList<RPoint>>();
+   
+    int minDim = (vertical==true)? (int)shape.getTopLeft().x : (int)shape.getTopLeft().y;
+    int maxDim = (vertical==true)? (int)shape.getTopLeft().x + (int)shape.getWidth() : (int)shape.getTopLeft().y + (int)shape.getHeight();
     
-    int maxDim = (vertical==true)? (int)shape.width : (int)shape.height;
     
-    for (float l=-10; l<maxDim+10; l+=_spacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
+    for (float l=minDim-10; l<maxDim+10; l+=_spacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
       RPoint lineBegin = new RPoint(l,0);
       RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-100, l, shape.width+100);
       if (vertical==false) {

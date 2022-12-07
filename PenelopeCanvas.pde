@@ -95,7 +95,6 @@ public class PenelopeCanvas {
       draw(l, fill);
     }
     graphics.endDraw();
-    println("PenelopeCanvas draw finished.");
   }
   
   public void draw(int _layer){
@@ -106,7 +105,7 @@ public class PenelopeCanvas {
     if(fill == true) {
       if (layers.get(_layer).children!=null) {
         for(RShape child: layers.get(_layer).children) {
-          RShape filled = iterativelyFill(child);
+          RShape filled = geoUtils.iterativelyFill(child, fillDensity, true);
           layers.get(_layer).addChild(filled);
         }
       } 
@@ -121,37 +120,6 @@ public class PenelopeCanvas {
     graphics.endDraw();
     println("PenelopeCanvas draw finished.");
   }
-  
-  private RShape iterativelyFill(RShape _layer) {
-    RShape fills = new RShape();
-    _layer.width = width;
-    _layer.height = height;
-    if (_layer.children!=null) {
-      for(RShape child: _layer.children) {
-        fills.addChild(iterativelyFill(child));
-      }
-    } else {
-      RShape thisfills = geoUtils.hatchFill(_layer, fillDensity, true); 
-      thisfills = geoUtils.mergeLines(thisfills,fillDensity*1.25f);
-      if(thisfills.children!=null) {
-        for (RShape child: thisfills.children) {
-          child.setFill("none");
-        }
-      }
-      fills.addChild(thisfills);
-    }
-    
-    return fills;
-  }
-  
-  
-//  private Boolean isIntersection(RPoint point, ArrayList<RPoint> intersections){
-//    if (intersections.size()==0) return false;
-//    for(RPoint intersection : intersections ) {
-//      if(point.x==intersection.x && point.y==intersection.y) return true;
-//    }
-//    return false;
-//  }
   
   public void saveImage(String output){
     String name = "output/"+month()+"."+day()+"."+year()+"_"+hour()+"-"+minute()+"-"+second();
