@@ -6,7 +6,7 @@
 
 public class Drawing{
   Letters letters = new Letters();
-  ArrayList<ContourLevel> levels = new ArrayList<ContourLevel>();;
+  ArrayList<ContourLevel> levels;
   PApplet applet;
   int numContours;
   int firstLayer;
@@ -54,20 +54,27 @@ public class Drawing{
     canvas.addShape(2, words);
     
     // contours (requires image to be loaded)
-    println("levels.size()",levels.size());
-    if(levels.size()>0){
+    //println("levels.size()",levels.size());
+    if(levels != null){
       for (int i=0; i<this.numContours; i++){
-        ArrayList<RShape> contours = levels.get(i).getContours();
+        println("drawing level", i);
+        // TODO: position drawing appropriately
+        RShape contours = levels.get(i).getContours();
         
-        for (RShape contour: contours){
-          canvas.addMaskedShape(i+this.firstLayer, contour);
-        }
+        if (i < this.numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
+        
+        //contours = geoUtils.mergeLines(contours, 10);
+        RShape fill = geoUtils.iterativelyFill(contours, 1+(levels.get(i).getThreshold()/10) , true); 
+        canvas.addShape(i+this.firstLayer, fill);
+        canvas.addShape(i+this.firstLayer, contours);
       }
     }
+    println("drawing done");
   }
   
   void processImage(){
-    println("image loaded");
+    // TODO: change to variable number of thresholds rather than just the one
+    levels = new ArrayList<ContourLevel>();
     for (int i=0; i<this.numContours; i++){
       ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), int(parameters.cp5.getController("threshold"+i).getValue()));
       
@@ -77,8 +84,5 @@ public class Drawing{
       levels.add(level);
     }
     println("image processing complete");
-    
-    // TODO: calling right away crashes app
-    //drawOnce();
   }
 }

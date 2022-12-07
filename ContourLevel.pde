@@ -17,6 +17,7 @@ class ContourLevel {
   private float multiplier;
   private float offsetX;
   private float offsetY;
+  private int threshold;
   
   ContourLevel(PApplet applet, PImage _src, float scale, int threshold) {
     src = _src.copy();
@@ -31,6 +32,8 @@ class ContourLevel {
     thresholdImage = opencv.getSnapshot();
     contours = opencv.findContours();  
     
+    this.threshold = threshold;
+    
     float multiplierWidth = canvas.width/(float)src.width;
     float multiplierheight = canvas.height/(float)src.height;
     multiplier = min(multiplierWidth, multiplierheight);
@@ -40,7 +43,6 @@ class ContourLevel {
   }
   
   RShape getContour(Contour contour){
-    // TODO: update to draw using new canvas functions
     RShape shape = new RShape();
     if (contour.getPoints().size() > 1) {
       
@@ -50,24 +52,23 @@ class ContourLevel {
       for (int i = 1; i<contour.getPoints().size(); i++) {
         PVector thisPoint = contour.getPoints().get(i);
         path.addLineTo(thisPoint.x, thisPoint.y);
-      }
-      
-      // TODO: close, if needed
-      path.addLineTo(firstPoint.x, firstPoint.y);
-      
+      }      
       shape.addPath(path);
+    }
+    shape.addClose();
+    return shape;
+  }
+  
+  RShape getContours(){
+    RShape shape = new RShape();
+    for (int i = 0; i<contours.size(); i++){
+      shape.addChild(getContour(contours.get(i)));
     }
     return shape;
   }
-    
-  ArrayList<RShape> getContours(){
-    ArrayList<RShape> shapes = new ArrayList<RShape>();
-    
-    for (int i = 0; i<contours.size(); i++){
-      shapes.add(getContour(contours.get(i)));
-    }
-    
-    return shapes;
+  
+  int getThreshold(){
+    return threshold;
   }
   
   PImage getThresholdImage(){

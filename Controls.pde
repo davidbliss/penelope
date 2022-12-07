@@ -94,13 +94,15 @@ void randomizeParameters(){
 }
 
 void regenerate(){  
-  // controlEvent is automatically called, causing redraw
 }
 
 public void controlEvent(ControlEvent theEvent){
   // controlEvent is called before the program's setup is complete.
   // calling drawOnce before program is complete generates error
+  
+  // TODO: ignore event if it is loadImage
   if(canvas != null){
+    if(loadedImage!=null) drawing.processImage();
     drawRequested = true;
   }
 }
@@ -114,7 +116,7 @@ void loadImageFromDisk(File selection){
     println("dialog closed or canceled.");
   } else {
     String path = selection.getAbsolutePath();
-    println("loading path " + path);
+    println("loading image:", path);
     loadedImage = loadImage(path);
     drawing.processImage();
     drawRequested = true;

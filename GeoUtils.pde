@@ -19,6 +19,23 @@ public class GeoUtils {
     return sortedPoints;
   }
   
+  public RShape fill(RShape shape, float _spacing, boolean vertical){
+    RShape fill = new RShape();
+    int minDim = (vertical==true)? (int)shape.getTopLeft().x : (int)shape.getTopLeft().y;
+    int maxDim = (vertical==true)? (int)shape.getTopLeft().x + (int)shape.getWidth() : (int)shape.getTopLeft().y + (int)shape.getHeight();
+    
+    for (float l=minDim-10; l<maxDim+10; l+=_spacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
+      RPoint lineBegin = new RPoint(l,0);
+      RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-100, l, shape.getHeight()+100);
+      if (vertical==false) {
+        lineBegin = new RPoint(0,l);
+        cuttingLine = RG.getLine(lineBegin.x-100, lineBegin.y, shape.getWidth()+100, l);
+      }
+      fill.addChild(cuttingLine);
+    }
+    return canvas.maskShape(shape, fill);
+  }
+  
   public RShape iterativelyFill(RShape _layer, float fillDensity, boolean vertical) {
     RShape fills = new RShape();
     _layer.width = width;
@@ -29,7 +46,7 @@ public class GeoUtils {
       }
     } else {
       RShape thisfills = hatchFill(_layer, fillDensity, vertical); 
-      thisfills = geoUtils.mergeLines(thisfills,fillDensity*1.25f);
+      //thisfills = geoUtils.mergeLines(thisfills,fillDensity*1.25f);
       if(thisfills.children!=null) {
         for (RShape child: thisfills.children) {
           child.setFill("none");
@@ -49,13 +66,12 @@ public class GeoUtils {
     int minDim = (vertical==true)? (int)shape.getTopLeft().x : (int)shape.getTopLeft().y;
     int maxDim = (vertical==true)? (int)shape.getTopLeft().x + (int)shape.getWidth() : (int)shape.getTopLeft().y + (int)shape.getHeight();
     
-    
     for (float l=minDim-10; l<maxDim+10; l+=_spacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
       RPoint lineBegin = new RPoint(l,0);
-      RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-100, l, shape.width+100);
+      RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-100, l, shape.getHeight()+100);
       if (vertical==false) {
         lineBegin = new RPoint(0,l);
-        cuttingLine = RG.getLine(lineBegin.x-100, lineBegin.y, shape.width+100, l);
+        cuttingLine = RG.getLine(lineBegin.x-100, lineBegin.y, shape.getWidth()+100, l);
       }
       
       RPoint[] points = shape.getIntersections(cuttingLine);
@@ -65,21 +81,23 @@ public class GeoUtils {
         RPoint[] sortedPoints = geoUtils.sortPoints(points,lineBegin,shape.height*shape.height);
 
         int iterLength = sortedPoints.length;
-        if(sortedPoints.length%2!=0) {
-          println("odd number of points");
-          iterLength = sortedPoints.length-1;
-        }
-        for(int p=0; p<iterLength; p+=2) {
+        for(int p=0; p<iterLength-1; p+=1) {
           if(sortedPoints[p].dist(sortedPoints[p+1])>.5f) {
             hatches.addAll(geoUtils.subdivideLine(sortedPoints[p], sortedPoints[p+1], 0, 1));
           }
         }
-      }
+      } 
     }
     RShape shapeHatches = pointsToShape(hatches);
     shapeHatches.setStrokeWeight(.5f);
     shapeHatches.setFillAlpha(0);
-    return shapeHatches;
+    
+    RShape innerHatches = new RShape();
+    for (RShape child: shapeHatches.children){
+      if (shape.contains(child.paths[0].getPoint(.5).x, child.paths[0].getPoint(.5).y)) innerHatches.addChild(child);
+    }
+    
+    return innerHatches;
   }
   
   public ArrayList<ArrayList<RPoint>> subdivideLine(RPoint p1, RPoint p2, float _brightness, float _detailScale){

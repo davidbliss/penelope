@@ -20,6 +20,7 @@ public class Parameters {
     int xOffset = 130;
 
     cp5.addSlider("fillDensity")
+      .setTriggerEvent(Slider.RELEASE)
       .setLabel("fill density")
       .setPosition(xPos, yPos)
       .setWidth(100)
@@ -31,6 +32,7 @@ public class Parameters {
     xPos=xBase;
     
     cp5.addSlider("sampleScale")
+      .setTriggerEvent(Slider.RELEASE)
       .setLabel("sample scale")
       .setPosition(xPos, yPos)
       .setWidth(100)
@@ -42,29 +44,32 @@ public class Parameters {
     xPos=xBase;
 
     cp5.addSlider("threshold0")
+      .setTriggerEvent(Slider.RELEASE)
       .setLabel("sample threshold 1")
       .setPosition(xPos, yPos)
       .setWidth(100)
       .setRange(0,100)
-      .setValue(20)
+      .setValue(0)
      ;
     
     xPos+=xOffset+50;
     cp5.addSlider("threshold1")
+      .setTriggerEvent(Slider.RELEASE)
       .setLabel("sample threshold 2")
       .setPosition(xPos, yPos)
       .setWidth(100)
       .setRange(0,100)
-      .setValue(50)
+      .setValue(25)
      ;
     
     xPos+=xOffset+50;
     cp5.addSlider("threshold2")
+      .setTriggerEvent(Slider.RELEASE)
       .setLabel("sample threshold 3")
       .setPosition(xPos, yPos)
       .setWidth(100)
       .setRange(0,100)
-      .setValue(80)
+      .setValue(85)
      ;
     
     yPos+=yOffset;
@@ -75,7 +80,7 @@ public class Parameters {
       .setLabel("contour size")
       .setPosition(xPos, yPos)
       .setWidth(400)
-      .setRange(0,1)
+      .setRange(0.1,1)
       .setRangeValues(.001,1)
      ;
      
