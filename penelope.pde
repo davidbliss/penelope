@@ -28,6 +28,8 @@ int numCanvasLayers = 3;
 int onscreenCanvasWidth;
 int onscreenCanvasHeight;
 
+boolean drawRequested;
+
 void setup() {
   size(1400,800,P3D); // 1400,800 fits well on my laptop
   background(25);
@@ -37,11 +39,15 @@ void setup() {
   canvas = new PenelopeCanvas(this, numCanvasLayers);
   drawing = new Drawing(this, 3, 0);
   
-  drawOnce();
+  drawRequested = true;
 }
 
 void draw(){
   // draw needs to be here even if empty
+  if(drawRequested == true){
+    drawOnce();
+    drawRequested = false;
+  }
 }
 
 void drawOnce(){

@@ -48,13 +48,12 @@ public class Drawing{
     //RShape  border = RShape.createRectangle(canvas.margin, canvas.margin, canvas.width-(canvas.margin*2), canvas.height-(canvas.margin*2));
     //canvas.addShape(1, border);
     
-    //// some words
-    //RShape words = letters.getWords("happy");
-    //words.scale(10);
-    //canvas.addShape(2, words);
+    // some words
+    RShape words = letters.getWords("happy");
+    words.scale(10);
+    canvas.addShape(2, words);
     
     // contours (requires image to be loaded)
-    
     println("levels.size()",levels.size());
     if(levels.size()>0){
       for (int i=0; i<this.numContours; i++){
@@ -80,6 +79,6 @@ public class Drawing{
     println("image processing complete");
     
     // TODO: calling right away crashes app
-    drawOnce();
+    //drawOnce();
   }
 }

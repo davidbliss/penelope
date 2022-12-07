@@ -101,7 +101,7 @@ public void controlEvent(ControlEvent theEvent){
   // controlEvent is called before the program's setup is complete.
   // calling drawOnce before program is complete generates error
   if(canvas != null){
-    drawOnce();
+    drawRequested = true;
   }
 }
 
@@ -117,5 +117,6 @@ void loadImageFromDisk(File selection){
     println("loading path " + path);
     loadedImage = loadImage(path);
     drawing.processImage();
+    drawRequested = true;
   }
 }
