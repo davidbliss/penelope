@@ -1,12 +1,12 @@
-import processing.svg.*;
-
 Parameters parameters;  // drawing parameters that can be shuffled
 Controls controls;      // drawing controls and parameters that are not shuffled
-Colors colors;
+ColorManager colorManager = new ColorManager();
+
+GeoUtils geoUtils = new GeoUtils();
 
 Drawing drawing;
 
-ArrayList<PenelopeCanvas> canvases;
+PenelopeCanvas canvas;
 int numCanvases = 3;
 
 int onscreenCanvasWidth;
@@ -17,43 +17,11 @@ PImage loadedImage;
 void setup() {
   size(1400,800,P3D); // 1400,800 fits well on my laptop
   background(25);
-
-  parameters = new CubeParameters(this);
-  controls = new Controls(this);
-  colors = new Colors();
   
-  init();
-}
-
-// do things here that need to be done each time drawing is regenerated
-void init(){
-  canvases = new ArrayList<PenelopeCanvas>();
-  for (int i = 0; i < numCanvases; i++){
-    PenelopeCanvas newCanvas = new PenelopeCanvas(parameters, controls);
-    newCanvas.graphics.beginDraw(); // if we later try to draw the graphics, and nothing is there, it throws error... 
-    newCanvas.graphics.endDraw();   // these two lines prevent that error in case Drawing does not put something into the canvas
-    canvases.add(newCanvas);
-  }
-
-  // calculate the onscreen canvas width and height
-  PGraphics graphics = canvases.get(0).graphics;
-  float scale;
-  if(canvases.get(0).graphics.width<graphics.height){
-    scale = float(height) / graphics.height;
-  } else {
-    scale = float(height) / graphics.width;
-  }
-  onscreenCanvasWidth = int(graphics.width * scale);
-  onscreenCanvasHeight = int(graphics.height * scale);
-
-  // initial OffscreenCanvas background is not drawn, so we draw it manually here.
-  fill(255);
-  rect(0,0,onscreenCanvasWidth,onscreenCanvasHeight);
-
-  // create the drawing object
-  drawing = new Drawing(parameters);
-
-  // initial drawing
+  parameters = new Parameters(this);
+  controls = new Controls(this);
+  canvas = new PenelopeCanvas(this, controls, 3);
+  
   initDrawing();
 }
 
@@ -61,91 +29,40 @@ void draw(){
   // draw needs to be here even if empty
 }
 
+// do things here that need to be done each time drawing is regenerated
 void initDrawing(){
-  // generate the drawing
-  drawing.generate();
-
-  // draw it offscreen
-  drawing.draw(canvases);
+  setupCanvas();
+  canvas.clear();
+  background(25);
   
-  // draw the preview to the screen.
-  for (PenelopeCanvas canvas : canvases){
-    image(canvas.graphics, 0, 0, onscreenCanvasWidth, onscreenCanvasHeight);
-  }
-}
+  // initial OffscreenCanvas background is not drawn, so we draw it manually here.
+  fill(255);
+  rect(0,0,onscreenCanvasWidth,onscreenCanvasHeight);
+  noFill();
 
-// FUNCTIONS FOR CONTROLS
-void frontCam(){
-  println("front cam");
-  parameters.cp5.getController("camRotationX").setValue(0);
-  parameters.cp5.getController("camRotationY").setValue(0);
-  parameters.cp5.getController("camRotationZ").setValue(0);
-}
-
-void topCam(){
-  parameters.cp5.getController("camRotationX").setValue(0);
-  parameters.cp5.getController("camRotationY").setValue(PI/2);
-  parameters.cp5.getController("camRotationZ").setValue(0);
-}
-
-void sideCam(){
-  parameters.cp5.getController("camRotationX").setValue(0);
-  parameters.cp5.getController("camRotationY").setValue(0);
-  parameters.cp5.getController("camRotationZ").setValue(PI/2);
-}
-
-void angleCam(){
-  parameters.cp5.getController("camRotationX").setValue(-PI/4);
-  parameters.cp5.getController("camRotationY").setValue(PI/4);
-  parameters.cp5.getController("camRotationZ").setValue(0);
-}
-
-void saveSnapshot(){
-  ArrayList<PenelopeCanvas> svgs = new ArrayList<PenelopeCanvas>();
-  String name = "output/"+month()+"."+day()+"."+year()+"_"+hour()+"-"+minute()+"-"+second();
+  // create the drawing object
+  drawing = new Drawing(parameters);
+  drawing.draw(canvas);
   
-  //drawing.draw(canvases);
-  
-  ArrayList<PenelopeCanvas> proof = new ArrayList<PenelopeCanvas>();
-  PenelopeCanvas pCanvas = new PenelopeCanvas(parameters, controls);
-  pCanvas.graphics.beginDraw(); // entice it into immediate action
-  pCanvas.graphics.endDraw();
-  proof.add(pCanvas);
-  
-  drawing.draw(proof);
-  proof.get(0).saveImage(name+"-composite");
-  
-  int layerNum = 1;
-  for (PenelopeCanvas layer : canvases){
-    layer.saveImage(name+"-layer-"+layerNum);
-    svgs.add(new PenelopeCanvas(createGraphics(canvases.get(0).graphics.width, canvases.get(0).graphics.height, SVG, name+"-layer-"+layerNum+".svg"), parameters, controls));
-    layerNum++;
-  }
-  parameters.manager.saveValues(name);
-  
-  // draw to SVG layers, which triggers save
-  drawing.draw(svgs);
+  drawCanvas();
 }
 
-void randomizeParameters(){
-  parameters.manager.randomize();
-  regenerate();
-}
+void setupCanvas(){
+  // since page width and height can be changed, this is called 
+  canvas.setDimensions();
 
-void regenerate(){  
-  init();
-}
-
-void loadFromFile(){
-  selectInput("Select a file to process:", "loadImageFromDisk");
-}
-
-void loadImageFromDisk(File selection){
-  if (selection == null) {
-    println("dialog closed or canceled.");
+  // calculate the onscreen canvas width and height
+  float scale;
+  if(canvas.width < canvas.height){
+    scale = (float) height / canvas.height;
   } else {
-    String path = selection.getAbsolutePath();
-    println("loading path " + path);
-    loadedImage = loadImage(path); 
+    scale = (float) height / canvas.width;
   }
+  onscreenCanvasWidth = (int) (canvas.width * scale);
+  onscreenCanvasHeight = (int) (canvas.height * scale);
+}
+
+void drawCanvas(){
+  canvas.draw(true);
+  image(canvas.graphics, 0, 0, onscreenCanvasWidth, onscreenCanvasHeight);
 }

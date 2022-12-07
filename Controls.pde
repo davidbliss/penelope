@@ -26,6 +26,7 @@ public class Controls {
     yPos+=yOffset;
     
     cp5.addSlider("pageWidth")
+      .setTriggerEvent(Slider.RELEASE)
       .setLabel("page width (in)")
       .setPosition(xPos, yPos)
       .setWidth(100)
@@ -35,6 +36,7 @@ public class Controls {
     xPos+=xOffset+50;
 
     cp5.addSlider("pageHeight")
+      .setTriggerEvent(Slider.RELEASE)
       .setLabel("page height (in)")
       .setPosition(xPos, yPos)
       .setWidth(100)
@@ -44,6 +46,7 @@ public class Controls {
     xPos+=xOffset+50;
     
     cp5.addSlider("margin")
+      .setTriggerEvent(Slider.RELEASE)
       .setLabel("margin (in)")
       .setPosition(xPos, yPos)
       .setWidth(100)
@@ -55,49 +58,6 @@ public class Controls {
     yPos+=yOffset;
     xPos=xBase;
     
-    cp5.addSlider("curveFidelity")
-      .setLabel("curve fidelity")
-      .setPosition(xPos, yPos)
-      .setWidth(100)
-      .setRange(0,1)
-      .setValue(.5)
-     ;
-    yPos+=yOffset;
-
-    cp5.addButton("frontCam")
-      .setLabel("front")
-      .setPosition(xPos, yPos)
-      .setSize(100,20)
-      .linebreak();
-      ;
-    xPos+=xOffset;
-
-    cp5.addButton("topCam")
-      .setLabel("top")
-      .setPosition(xPos, yPos)
-      .setSize(100,20)
-      .linebreak();
-      ;
-    xPos+=xOffset;
-
-    cp5.addButton("sideCam")
-      .setLabel("side")
-      .setPosition(xPos, yPos)
-      .setSize(100,20)
-      .linebreak();
-      ;
-    xPos+=xOffset;
-
-    cp5.addButton("angleCam")
-      .setLabel("angle")
-      .setPosition(xPos, yPos)
-      .setSize(100,20)
-      .linebreak();
-      ;
-
-    yPos+=yOffset;
-    xPos=xBase;
-
     cp5.addButton("regenerate")
       .setLabel("regenerate")
       .setPosition(xPos, yPos)
@@ -119,6 +79,38 @@ public class Controls {
      ;
     yPos+=yOffset;
   }
+}
 
+// FUNCTIONS FOR CONTROLS
+public void saveSnapshot(){
+  String output = "";
+  canvas.saveImage(output);
+}
 
+void randomizeParameters(){
+  parameters.manager.randomize();
+  regenerate();
+}
+
+void loadFromFile(){
+  selectInput("Select a file to process:", "loadImageFromDisk");
+}
+
+void loadImageFromDisk(File selection){
+  if (selection == null) {
+    println("dialog closed or canceled.");
+  } else {
+    String path = selection.getAbsolutePath();
+    println("loading path " + path);
+    loadedImage = loadImage(path); 
+  }
+}
+
+void regenerate(){  
+  //initDrawing();
+}
+
+public void controlEvent(ControlEvent theEvent){
+  println("controlEvent");
+  initDrawing();
 }
