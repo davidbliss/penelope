@@ -4,8 +4,6 @@ public class PenelopeCanvas {
   int margin;
   int width;
   int height;  
-  
-  float fillDensity = 1;
 
   // based on the PenController software
   float scaleAdjust = 71.95f;
@@ -28,11 +26,6 @@ public class PenelopeCanvas {
     RG.setPolygonizer(RG.ADAPTATIVE);
 
     initLayers();
-  }
-  
-  // for good solid fill with 05 micron, use 1. 1.5 is also nice (good texture up close).... however, if you print things that are scaled up, 1 introduces errors... and reassl large scales 1.5 has trouble.
-  public void setFillDensity(float fd) {
-    fillDensity = fd;
   }
   
   public void initLayers(){
@@ -73,38 +66,15 @@ public class PenelopeCanvas {
   }
   
   public void draw(){
-    draw(false);
-  }
-  
-  public void draw(boolean fill){
     graphics.beginDraw();
-    
     for (int l=0; l<layers.size(); l++){
       println("PenelopeCanvas drawing layer", l+1, "of",layers.size());
-      //if (layer.getPoints()!=null) println("points",layer.getPoints().length);
-      
-      // TODO: this call is expensive, would be ideal to draw the preview directly to the canvas when 
-      // "The tessellator is generating too many vertices"
-      // should we have a canvas for each individual to reduce the redraws?
-      draw(l, fill);
+      draw(l);
     }
     graphics.endDraw();
   }
   
   public void draw(int _layer){
-    draw(_layer,false);
-  }
-  
-  public void draw(int _layer, boolean fill){
-    if(fill == true) {
-      if (layers.get(_layer).children!=null) {
-        for(RShape child: layers.get(_layer).children) {
-          RShape filled = geoUtils.iterativelyFill(child, fillDensity, true);
-          layers.get(_layer).addChild(filled);
-        }
-      } 
-    }
-    
     println("PenelopeCanvas draw called, may take a while...");
     graphics.beginDraw();
     layers.get(_layer).draw(graphics);
