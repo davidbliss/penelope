@@ -28,7 +28,6 @@ public class Letters {
     }
     
     return shape;
-    
   }
   
   private RShape getLetter(String letter, float x, float y, int s, float d) {

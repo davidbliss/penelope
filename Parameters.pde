@@ -1,3 +1,5 @@
+// project specific parameters go here
+
 public class Parameters {
   ControlP5 cp5;
   ParameterManager manager;

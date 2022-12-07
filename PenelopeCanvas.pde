@@ -77,11 +77,10 @@ public class PenelopeCanvas {
   }
   
   public void draw(boolean fill){
-    println("PenelopeCanvas draw called, may take a while...");
     graphics.beginDraw();
     
     for (int l=0; l<layers.size(); l++){
-      println("PenelopeCanvas drawing layer", l+1, "of",layers.size(), ". This may take a while...");
+      println("PenelopeCanvas drawing layer", l+1, "of",layers.size());
       //if (layer.getPoints()!=null) println("points",layer.getPoints().length);
       
       // TODO: this call is expensive, would be ideal to draw the preview directly to the canvas when 
@@ -108,10 +107,7 @@ public class PenelopeCanvas {
     
     println("PenelopeCanvas draw called, may take a while...");
     graphics.beginDraw();
-    
-    println("PenelopeCanvas drawing a layer. This may take a while...");
     layers.get(_layer).draw(graphics);
-
     graphics.endDraw();
     println("PenelopeCanvas draw finished.");
   }

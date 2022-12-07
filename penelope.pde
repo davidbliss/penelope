@@ -20,10 +20,10 @@ ColorManager colorManager = new ColorManager();
 GeoUtils geoUtils = new GeoUtils();
 
 PenelopeCanvas canvas;
-Drawing drawing;
+Drawing drawing = new Drawing();
 PImage loadedImage;
 
-int numCanvases = 3;
+int numCanvasLayers = 3;
 
 int onscreenCanvasWidth;
 int onscreenCanvasHeight;
@@ -34,34 +34,33 @@ void setup() {
   
   parameters = new Parameters(this);
   controls = new Controls(this);
-  canvas = new PenelopeCanvas(this, numCanvases);
+  canvas = new PenelopeCanvas(this, numCanvasLayers);
   
-  initDrawing();
+  drawOnce();
 }
 
 void draw(){
   // draw needs to be here even if empty
 }
 
-// do things here that need to be done each time drawing is regenerated
-void initDrawing(){
-  setupCanvas();
-  canvas.clear();
+void drawOnce(){
+  updateDimensions();
+  
   background(25);
   
   // initial OffscreenCanvas background is not drawn, so we draw it manually here.
   fill(255);
   rect(0,0,onscreenCanvasWidth,onscreenCanvasHeight);
   noFill();
-
-  // create the drawing object
-  drawing = new Drawing();
+  
+  canvas.clear();
   drawing.draw(canvas);
   
-  drawCanvas();
+  canvas.draw();
+  image(canvas.graphics, 0, 0, onscreenCanvasWidth, onscreenCanvasHeight);
 }
 
-void setupCanvas(){
+void updateDimensions(){
   // since page width and height can be changed, this is called 
   canvas.setDimensions();
 
@@ -74,9 +73,4 @@ void setupCanvas(){
   }
   onscreenCanvasWidth = (int) (canvas.width * scale);
   onscreenCanvasHeight = (int) (canvas.height * scale);
-}
-
-void drawCanvas(){
-  canvas.draw();
-  image(canvas.graphics, 0, 0, onscreenCanvasWidth, onscreenCanvasHeight);
 }

@@ -90,6 +90,18 @@ void randomizeParameters(){
   regenerate();
 }
 
+void regenerate(){  
+  // controlEvent is automatically called, causing redraw
+}
+
+public void controlEvent(ControlEvent theEvent){
+  // controlEvent is called before the program's setup is complete.
+  // calling drawOnce before program is complete generates error
+  if(canvas != null){
+    drawOnce();
+  }
+}
+
 void loadFromFile(){
   selectInput("Select a file to process:", "loadImageFromDisk");
 }
@@ -100,17 +112,7 @@ void loadImageFromDisk(File selection){
   } else {
     String path = selection.getAbsolutePath();
     println("loading path " + path);
-    loadedImage = loadImage(path); 
+    loadedImage = loadImage(path);
+    drawing.processImage();
   }
-}
-
-void regenerate(){  
-  //initDrawing();
-}
-
-public void controlEvent(ControlEvent theEvent){
-  println("controlEvent");
-  
-  // TODO:calling initdrawing directly throws an error on start
-  initDrawing();
 }
