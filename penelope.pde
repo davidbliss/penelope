@@ -1,19 +1,32 @@
+// imports used throughout
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import geomerative.RG;
+import geomerative.RPath;
+import geomerative.RPoint;
+import geomerative.RShape;
+import geomerative.RCommand;
+
+import controlP5.*;
+
+// globals used throughout
 Parameters parameters;  // drawing parameters that can be shuffled
 Controls controls;      // drawing controls and parameters that are not shuffled
-ColorManager colorManager = new ColorManager();
 
+ColorManager colorManager = new ColorManager();
 GeoUtils geoUtils = new GeoUtils();
 
-Drawing drawing;
-
 PenelopeCanvas canvas;
+Drawing drawing;
+PImage loadedImage;
+
 int numCanvases = 3;
 
 int onscreenCanvasWidth;
 int onscreenCanvasHeight;
-
-PImage loadedImage;
 
 void setup() {
   size(1400,800,P3D); // 1400,800 fits well on my laptop
@@ -21,7 +34,7 @@ void setup() {
   
   parameters = new Parameters(this);
   controls = new Controls(this);
-  canvas = new PenelopeCanvas(this, controls, 3);
+  canvas = new PenelopeCanvas(this, numCanvases);
   
   initDrawing();
 }
@@ -42,7 +55,7 @@ void initDrawing(){
   noFill();
 
   // create the drawing object
-  drawing = new Drawing(parameters);
+  drawing = new Drawing();
   drawing.draw(canvas);
   
   drawCanvas();

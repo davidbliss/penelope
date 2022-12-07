@@ -1,5 +1,3 @@
-Group controlsGroup;
-
 public class Controls {
   ControlP5 cp5;
 

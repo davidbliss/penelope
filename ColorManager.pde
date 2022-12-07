@@ -1,4 +1,3 @@
-
 public class ColorManager{
   float numColors = 4;
   

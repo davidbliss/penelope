@@ -1,11 +1,9 @@
 // For convinience, all drawing things are consolidated here
 
 public class Drawing{
-  Parameters parameters;
   Letters letters = new Letters();
 
-  Drawing(Parameters parameters){
-    this.parameters = parameters;
+  Drawing(){
   }
 
   public void draw(PenelopeCanvas canvas){
@@ -31,8 +29,6 @@ public class Drawing{
     path.addLineTo(canvas.width-canvas.width/3, canvas.height/3);
     path.addLineTo(canvas.width/3,canvas.height/3);
     shape.addPath(path);
-    println("draw: shape dimensions", shape.width, shape.height);
-    
     
     thisfills = geoUtils.iterativelyFill(shape, 10, true); 
    

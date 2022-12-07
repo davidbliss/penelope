@@ -1,9 +1,4 @@
-// based on a group of CP5 controls randomize them
-
 // currently supports sliders and toggles
-
-import controlP5.*;
-import java.util.List;
 
 public class ParameterManager {
   ControlP5 cp5;

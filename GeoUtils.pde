@@ -1,11 +1,3 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import geomerative.RG;
-import geomerative.RPath;
-import geomerative.RPoint;
-import geomerative.RShape;
-
 //TODO: some functions in this class(like filterJaggedLines) handle nested shapes, others (like thickenLines) do not; need to come to terms with that to improve reusability
 
 public class GeoUtils {

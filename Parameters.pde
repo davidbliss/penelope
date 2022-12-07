@@ -1,5 +1,3 @@
-import controlP5.*;
-
 public class Parameters {
   ControlP5 cp5;
   ParameterManager manager;

@@ -1,8 +1,4 @@
-import geomerative.*;
-import java.util.ArrayList;
-
 public class PenelopeCanvas {
-  Controls controls;
   PGraphics graphics;
   
   int margin;
@@ -25,8 +21,7 @@ public class PenelopeCanvas {
   RPath topPath;
   RPath bottomPath;
   
-  public PenelopeCanvas(PApplet applet, Controls controls, int numLayers) {
-    this.controls = controls;
+  public PenelopeCanvas(PApplet applet, int numLayers) {
     this.numLayers = numLayers;
     
     RG.init(applet);
