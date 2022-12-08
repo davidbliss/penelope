@@ -49,9 +49,9 @@ public class Drawing{
     //canvas.addShape(1, border);
     
     // some words
-    RShape words = letters.getWords("happy");
-    words.scale(10);
-    canvas.addShape(2, words);
+    //RShape words = letters.getWords("happy");
+    //words.scale(10);
+    //canvas.addShape(2, words);
     
     // contours (requires image to be loaded)
     
@@ -86,15 +86,17 @@ public class Drawing{
         
         if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
       }
+      if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
     }
+    
     println("drawing done");
   }
   
   void processImage(){
+    // create contours
     levels = new ArrayList<ContourLevel>();
     for (int i=0; i < int(parameters.cp5.getController("numContours").getValue()); i++){
-      
-      int threshold = int(float(i)/int(parameters.cp5.getController("numContours").getValue())*100); 
+      int threshold = int(float(i)/int(parameters.cp5.getController("numContours").getValue())*100) - 1; 
       ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), threshold);
       
       float[] values = parameters.cp5.getController("contourSizeRange").getArrayValue();

@@ -12,12 +12,67 @@ public class Controls {
 
   void init(){
     int xBase = 810;
-    int yBase = 610;
+    int yBase = 460;
     int xPos = xBase;
     int yPos = yBase;
     int yOffset = 25;
     int xOffset = 130;
+    
+    cp5.addButton("loadFromFile")
+     .setLabel("load image")
+     .setPosition(xPos, yPos)
+     .setSize(100,20)
+     ;
+    yPos+=yOffset;
+    
+    // 0 is same as not running the filter
+    cp5.addSlider("brightness")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("brightness")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(-255,255)
+      .setValue(0)
+      ;
+    xPos+=xOffset+50;
+    
+    cp5.addToggle("runBrightness")
+     .setLabel("brightness")
+     .setPosition(xPos, yPos)
+     .setSize(50,10)
+     .setValue(true)
+     ;
+    xPos=xBase;
+    yPos+=yOffset;
 
+    // 1 is same as not running filter
+    cp5.addSlider("contrast")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("contrast")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,3)
+      .setValue(1)
+      ;
+    xPos+=xOffset+50;
+    
+    cp5.addToggle("runContrast")
+     .setLabel("contrast")
+     .setPosition(xPos, yPos)
+     .setSize(50,10)
+     .setValue(true)
+     ;
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addToggle("showImage")
+     .setLabel("show image")
+     .setPosition(xPos, yPos)
+     .setSize(50,10)
+     .setValue(false)
+     ;
+    yPos+=yOffset*2;
+    
     cp5.addButton("randomizeParameters")
       .setLabel("shuffle parameters")
       .setPosition(xPos, yPos)
@@ -72,13 +127,6 @@ public class Controls {
       .setSize(100,20)
       ;
     
-    xPos+=xOffset;
-    cp5.addButton("loadFromFile")
-     .setLabel("load image")
-     .setPosition(xPos, yPos)
-     .setSize(100,20)
-     ;
-    yPos+=yOffset;
   }
 }
 

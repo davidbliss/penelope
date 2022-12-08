@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 class ContourLevel {
   private PImage src;
   private PImage thresholdImage;
+  private PImage adjustedImage;
   private ArrayList<Contour> contours;
   private OpenCV opencv;
   
@@ -25,7 +26,9 @@ class ContourLevel {
    
     opencv = new OpenCV(applet, src.copy());
     opencv.gray();
-    opencv.contrast(.75);
+    if(controls.cp5.getController("runBrightness").getValue()==1.0) opencv.brightness(int(controls.cp5.getController("brightness").getValue()));
+    if(controls.cp5.getController("runContrast").getValue()==1.0) opencv.contrast(controls.cp5.getController("contrast").getValue());
+    adjustedImage = opencv.getSnapshot();
     opencv.threshold(threshold);
     thresholdImage = opencv.getSnapshot();
     contours = opencv.findContours();  
@@ -71,6 +74,10 @@ class ContourLevel {
   
   PImage getThresholdImage(){
     return thresholdImage;
+  }
+  
+  PImage getAdjustedImage(){
+    return adjustedImage;
   }
   
   Float getMultiplier(){
