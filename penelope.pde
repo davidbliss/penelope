@@ -37,7 +37,7 @@ void setup() {
   parameters = new Parameters(this);
   controls = new Controls(this);
   canvas = new PenelopeCanvas(this, numCanvasLayers);
-  drawing = new Drawing(this, 3, 0);
+  drawing = new Drawing(this, 1);
   
   drawRequested = true;
 }

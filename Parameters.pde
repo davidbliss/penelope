@@ -31,6 +31,18 @@ public class Parameters {
     yPos+=yOffset;
     xPos=xBase;
     
+    cp5.addSlider("numContours")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("number of contours")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(1,10)
+      .setValue(4)
+     ;
+    
+    yPos+=yOffset;
+    xPos=xBase;
+    
     cp5.addSlider("sampleScale")
       .setTriggerEvent(Slider.RELEASE)
       .setLabel("sample scale")
@@ -42,42 +54,10 @@ public class Parameters {
     
     yPos+=yOffset;
     xPos=xBase;
-
-    cp5.addSlider("threshold0")
-      .setTriggerEvent(Slider.RELEASE)
-      .setLabel("sample threshold 1")
-      .setPosition(xPos, yPos)
-      .setWidth(100)
-      .setRange(0,100)
-      .setValue(0)
-     ;
-    
-    xPos+=xOffset+50;
-    cp5.addSlider("threshold1")
-      .setTriggerEvent(Slider.RELEASE)
-      .setLabel("sample threshold 2")
-      .setPosition(xPos, yPos)
-      .setWidth(100)
-      .setRange(0,100)
-      .setValue(25)
-     ;
-    
-    xPos+=xOffset+50;
-    cp5.addSlider("threshold2")
-      .setTriggerEvent(Slider.RELEASE)
-      .setLabel("sample threshold 3")
-      .setPosition(xPos, yPos)
-      .setWidth(100)
-      .setRange(0,100)
-      .setValue(85)
-     ;
-    
-    yPos+=yOffset;
-    xPos=xBase;
     
     // this should be relative to the largest contour
     cp5.addRange("contourSizeRange")
-      .setLabel("contour size")
+      .setLabel("contour size range")
       .setPosition(xPos, yPos)
       .setWidth(400)
       .setRange(0.1,1)

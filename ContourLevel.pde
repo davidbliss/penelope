@@ -1,5 +1,3 @@
-// TODO: port to use geomerative?
-
 import gab.opencv.*;
 import java.util.HashMap;
 import java.util.Map;

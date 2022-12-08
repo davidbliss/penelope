@@ -9,13 +9,12 @@ public class Drawing{
   Letters letters = new Letters();
   ArrayList<ContourLevel> levels;
   PApplet applet;
-  int numContours;
+  int canvasLayer;
   int firstLayer;
   
-  Drawing(PApplet applet, int numContours, int firstLayer){
+  Drawing(PApplet applet, int canvasLayer){
     this.applet = applet;
-    this.numContours = numContours;
-    this.firstLayer = firstLayer;
+    this.canvasLayer = canvasLayer;
   }
 
   public void draw(PenelopeCanvas canvas){
@@ -55,9 +54,9 @@ public class Drawing{
     canvas.addShape(2, words);
     
     // contours (requires image to be loaded)
-    //println("levels.size()",levels.size());
+    int numContours = int(parameters.cp5.getController("numContours").getValue());
     if(levels != null){
-      for (int i=0; i<this.numContours; i++){
+      for (int i=0; i<numContours; i++){
         println("drawing level", i);
         
         RShape contours = levels.get(i).getContours();
@@ -65,9 +64,8 @@ public class Drawing{
         float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
         float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
         
-        if (i < this.numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
+        if (i < numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
         
-        // TODO: scale contours to fill the width or height
         float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
         float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
         float scale = scaleY;
@@ -80,18 +78,18 @@ public class Drawing{
         
         RShape fill = geoUtils.fill(contours, 1+(levels.get(i).getThreshold()/10) , true);
       
-        canvas.addShape(i+this.firstLayer, fill);
-        canvas.addShape(i+this.firstLayer, contours);
+        canvas.addShape(canvasLayer, fill);
+        canvas.addShape(canvasLayer, contours);
       }
     }
     println("drawing done");
   }
   
   void processImage(){
-    // TODO: change to variable number of thresholds rather than just the one
     levels = new ArrayList<ContourLevel>();
-    for (int i=0; i<this.numContours; i++){
-      ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), int(parameters.cp5.getController("threshold"+i).getValue()));
+    for (int i=0; i < int(parameters.cp5.getController("numContours").getValue()); i++){
+      println(int(float(i)/int(parameters.cp5.getController("numContours").getValue())*100));
+      ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), int(float(i)/int(parameters.cp5.getController("numContours").getValue())*100));
       
       float[] values = parameters.cp5.getController("contourSizeRange").getArrayValue();
       level.removeContoursSmallerThan(values[0]);
