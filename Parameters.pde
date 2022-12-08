@@ -60,11 +60,29 @@ public class Parameters {
       .setLabel("contour size range")
       .setPosition(xPos, yPos)
       .setWidth(400)
-      .setRange(0.1,1)
+      .setRange(0,1)
       .setRangeValues(.001,1)
      ;
      
     yPos+=yOffset;
     xPos=xBase;
+    
+    cp5.addToggle("showFill")
+     .setLabel("fill")
+     .setPosition(xPos, yPos)
+     .setSize(50,10)
+     .setValue(true)
+     ;
+
+    xPos+=xOffset;
+    
+    cp5.addToggle("showContours")
+     .setLabel("contours")
+     .setPosition(xPos, yPos)
+     .setSize(50,10)
+     .setValue(false)
+     ;
+
+    xPos+=xOffset;
   }
 }

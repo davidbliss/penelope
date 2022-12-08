@@ -54,6 +54,8 @@ public class Drawing{
     canvas.addShape(2, words);
     
     // contours (requires image to be loaded)
+    
+    
     int numContours = int(parameters.cp5.getController("numContours").getValue());
     if(levels != null){
       for (int i=0; i<numContours; i++){
@@ -76,10 +78,12 @@ public class Drawing{
         contours.scale(scale);
         contours.translate(offsetX, offsetY);
         
-        RShape fill = geoUtils.fill(contours, (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue() , true);
-      
-        canvas.addShape(canvasLayer, fill);
-        canvas.addShape(canvasLayer, contours);
+        if(parameters.cp5.getController("showFill").getValue()==1.0){
+          RShape fill = geoUtils.fill(contours, (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue() , true);
+          canvas.addShape(canvasLayer, fill);
+        }
+        
+        if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
       }
     }
     println("drawing done");
