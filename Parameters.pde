@@ -60,7 +60,7 @@ public class Parameters {
       .setLabel("contour size range")
       .setPosition(xPos, yPos)
       .setWidth(400)
-      .setRange(0,1)
+      .setRange(.001,1)
       .setRangeValues(.001,1)
      ;
      

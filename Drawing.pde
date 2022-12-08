@@ -78,8 +78,9 @@ public class Drawing{
         contours.scale(scale);
         contours.translate(offsetX, offsetY);
         
-        if(parameters.cp5.getController("showFill").getValue()==1.0){
-          RShape fill = geoUtils.fill(contours, (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue() , true);
+        if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
+          float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
+          RShape fill = geoUtils.fill(contours, fillSpacing, true);
           canvas.addShape(canvasLayer, fill);
         }
         
