@@ -76,7 +76,7 @@ public class Drawing{
         contours.scale(scale);
         contours.translate(offsetX, offsetY);
         
-        RShape fill = geoUtils.fill(contours, 1+(levels.get(i).getThreshold()/10) , true);
+        RShape fill = geoUtils.fill(contours, (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue() , true);
       
         canvas.addShape(canvasLayer, fill);
         canvas.addShape(canvasLayer, contours);
@@ -88,8 +88,9 @@ public class Drawing{
   void processImage(){
     levels = new ArrayList<ContourLevel>();
     for (int i=0; i < int(parameters.cp5.getController("numContours").getValue()); i++){
-      println(int(float(i)/int(parameters.cp5.getController("numContours").getValue())*100));
-      ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), int(float(i)/int(parameters.cp5.getController("numContours").getValue())*100));
+      
+      int threshold = int(float(i)/int(parameters.cp5.getController("numContours").getValue())*100); 
+      ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), threshold);
       
       float[] values = parameters.cp5.getController("contourSizeRange").getArrayValue();
       level.removeContoursSmallerThan(values[0]);

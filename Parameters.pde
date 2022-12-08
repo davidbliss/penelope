@@ -19,9 +19,9 @@ public class Parameters {
     int yOffset = 25;
     int xOffset = 130;
 
-    cp5.addSlider("fillDensity")
+    cp5.addSlider("fillSpacing")
       .setTriggerEvent(Slider.RELEASE)
-      .setLabel("fill density")
+      .setLabel("fill spacing")
       .setPosition(xPos, yPos)
       .setWidth(100)
       .setRange(1,10)
@@ -36,7 +36,7 @@ public class Parameters {
       .setLabel("number of contours")
       .setPosition(xPos, yPos)
       .setWidth(100)
-      .setRange(1,10)
+      .setRange(2,10)
       .setValue(4)
      ;
     

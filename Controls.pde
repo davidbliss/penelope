@@ -100,7 +100,7 @@ public void controlEvent(ControlEvent theEvent){
   // controlEvent is called before the program's setup is complete.
   // calling drawOnce before program is complete generates error
   
-  if(canvas != null && theEvent.getName() != "loadFromFile"){
+  if(canvas != null && theEvent.getName() != "loadFromFile" && theEvent.getName() != "saveSnapshot"){
     if(loadedImage!=null) drawing.processImage();
     drawRequested = true;
   }

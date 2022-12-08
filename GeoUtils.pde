@@ -59,36 +59,37 @@ public class GeoUtils {
     // NOTE: Added to support shapes more generically, might not work in apps using previous hatchFill.
     // This only recognizes holes if the paths are combined as one.
     RShape lines = new RShape();
+    if(fill.children != null){
+      for (RShape line: fill.children) {  // NOTE: get height is not reliable for all shapes adding some buffer
+        if(line.getPoints() != null){
+          RPoint firstPoint = line.getPoints()[0];
+          RPoint lastPoint = line.getPoints()[line.getPoints().length - 1];
+          RPoint[] points = shape.getIntersections(line);
+          
+          if(points!=null) {
+            // these intersection points are not in order. we have to sort them first.
+            RPoint[] sortedPoints = sortPoints(points,firstPoint,shape.getWidth()*shape.getHeight());
+            
+            lines.addChild(RG.getLine(firstPoint.x,firstPoint.y,sortedPoints[0].x,sortedPoints[0].y));
+            
     
-    for (RShape line: fill.children) {  // NOTE: get height is not reliable for all shapes adding some buffer
-      if(line.getPoints() != null){
-        RPoint firstPoint = line.getPoints()[0];
-        RPoint lastPoint = line.getPoints()[line.getPoints().length - 1];
-        RPoint[] points = shape.getIntersections(line);
-        
-        if(points!=null) {
-          // these intersection points are not in order. we have to sort them first.
-          RPoint[] sortedPoints = sortPoints(points,firstPoint,shape.getWidth()*shape.getHeight());
-          
-          lines.addChild(RG.getLine(firstPoint.x,firstPoint.y,sortedPoints[0].x,sortedPoints[0].y));
-          
-  
-          int iterLength = sortedPoints.length;
-          for(int p=0; p<iterLength-1; p+=1) {
-            if(sortedPoints[p].dist(sortedPoints[p+1])>.5f) {
-              lines.addChild(RG.getLine(sortedPoints[p].x,sortedPoints[p].y,sortedPoints[p+1].x,sortedPoints[p+1].y));
+            int iterLength = sortedPoints.length;
+            for(int p=0; p<iterLength-1; p+=1) {
+              if(sortedPoints[p].dist(sortedPoints[p+1])>.5f) {
+                lines.addChild(RG.getLine(sortedPoints[p].x,sortedPoints[p].y,sortedPoints[p+1].x,sortedPoints[p+1].y));
+              }
             }
+            lines.addChild(RG.getLine(sortedPoints[sortedPoints.length - 1].x,sortedPoints[sortedPoints.length - 1].y,lastPoint.x,lastPoint.y));
+            
+          } else {
+            lines.addChild(RG.getLine(firstPoint.x,firstPoint.y,lastPoint.x,lastPoint.y));
           }
-          lines.addChild(RG.getLine(sortedPoints[sortedPoints.length - 1].x,sortedPoints[sortedPoints.length - 1].y,lastPoint.x,lastPoint.y));
-          
-        } else {
-          lines.addChild(RG.getLine(firstPoint.x,firstPoint.y,lastPoint.x,lastPoint.y));
         }
       }
+      
+      lines.setStrokeWeight(.5f);
+      lines.setFillAlpha(0);
     }
-    
-    lines.setStrokeWeight(.5f);
-    lines.setFillAlpha(0);
     
     RShape innerHatches = new RShape();
     if(lines.children != null){
