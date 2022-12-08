@@ -1,6 +1,7 @@
 // Project specific drawing things go here
 
 // TODO: possible ideas for future:
+  // sketch_210920_ga_linedrawing - draw lines and perterb them based on the current region they are within -- maybe levergaing some what is in the offest line code
   // sketch_210920_ga_linedrawing - connecting nearby points of similar brightness
   // python - advanced contour management
 
@@ -58,13 +59,27 @@ public class Drawing{
     if(levels != null){
       for (int i=0; i<this.numContours; i++){
         println("drawing level", i);
-        // TODO: position drawing appropriately
+        
         RShape contours = levels.get(i).getContours();
+        
+        float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
+        float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
         
         if (i < this.numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
         
-        //contours = geoUtils.mergeLines(contours, 10);
-        RShape fill = geoUtils.iterativelyFill(contours, 1+(levels.get(i).getThreshold()/10) , true); 
+        // TODO: scale contours to fill the width or height
+        float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
+        float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
+        float scale = scaleY;
+        if (scaleX < scaleY) scale = scaleX;
+        
+        int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
+        int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
+        contours.scale(scale);
+        contours.translate(offsetX, offsetY);
+        
+        RShape fill = geoUtils.fill(contours, 1+(levels.get(i).getThreshold()/10) , true);
+      
         canvas.addShape(i+this.firstLayer, fill);
         canvas.addShape(i+this.firstLayer, contours);
       }

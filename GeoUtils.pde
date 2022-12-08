@@ -25,28 +25,25 @@ public class GeoUtils {
     int maxDim = (vertical==true)? (int)shape.getTopLeft().x + (int)shape.getWidth() : (int)shape.getTopLeft().y + (int)shape.getHeight();
     
     for (float l=minDim-10; l<maxDim+10; l+=_spacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
-      RPoint lineBegin = new RPoint(l,0);
-      RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-100, l, shape.getHeight()+100);
+      RPoint lineBegin = new RPoint(l,(int)shape.getTopLeft().y);
+      RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-10, l, (int)shape.getTopLeft().y + shape.getHeight()+10);
       if (vertical==false) {
-        lineBegin = new RPoint(0,l);
-        cuttingLine = RG.getLine(lineBegin.x-100, lineBegin.y, shape.getWidth()+100, l);
+        lineBegin = new RPoint((int)shape.getTopLeft().x,l);
+        cuttingLine = RG.getLine(lineBegin.x-10, lineBegin.y, (int)shape.getTopLeft().x + shape.getWidth()+10, l);
       }
       fill.addChild(cuttingLine);
     }
-    return canvas.maskShape(shape, fill);
+    return iterativelyClip(shape, fill);
   }
   
-  public RShape iterativelyFill(RShape _layer, float fillDensity, boolean vertical) {
+  public RShape iterativelyClip(RShape _layer, RShape fill) {
     RShape fills = new RShape();
-    _layer.width = width;
-    _layer.height = height;
     if (_layer.children!=null) {
       for(RShape child: _layer.children) {
-        fills.addChild(iterativelyFill(child, fillDensity, vertical));
+        fills.addChild(iterativelyClip(child, fill));
       }
     } else {
-      RShape thisfills = hatchFill(_layer, fillDensity, vertical); 
-      //thisfills = geoUtils.mergeLines(thisfills,fillDensity*1.25f);
+      RShape thisfills = fillClip(_layer, fill); 
       if(thisfills.children!=null) {
         for (RShape child: thisfills.children) {
           child.setFill("none");
@@ -58,110 +55,49 @@ public class GeoUtils {
     return fills;
   }
   
-  public RShape hatchFill(RShape shape, float _spacing, boolean vertical) {
+  public RShape fillClip(RShape shape, RShape fill) {
     // NOTE: Added to support shapes more generically, might not work in apps using previous hatchFill.
     // This only recognizes holes if the paths are combined as one.
-    ArrayList<ArrayList<RPoint>> hatches = new ArrayList<ArrayList<RPoint>>();
-   
-    int minDim = (vertical==true)? (int)shape.getTopLeft().x : (int)shape.getTopLeft().y;
-    int maxDim = (vertical==true)? (int)shape.getTopLeft().x + (int)shape.getWidth() : (int)shape.getTopLeft().y + (int)shape.getHeight();
+    RShape lines = new RShape();
     
-    for (float l=minDim-10; l<maxDim+10; l+=_spacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
-      RPoint lineBegin = new RPoint(l,0);
-      RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-100, l, shape.getHeight()+100);
-      if (vertical==false) {
-        lineBegin = new RPoint(0,l);
-        cuttingLine = RG.getLine(lineBegin.x-100, lineBegin.y, shape.getWidth()+100, l);
-      }
-      
-      RPoint[] points = shape.getIntersections(cuttingLine);
-      
-      if(points!=null) {
-        // these intersection points are not in order. we have to sort them first.
-        RPoint[] sortedPoints = geoUtils.sortPoints(points,lineBegin,shape.height*shape.height);
-
-        int iterLength = sortedPoints.length;
-        for(int p=0; p<iterLength-1; p+=1) {
-          if(sortedPoints[p].dist(sortedPoints[p+1])>.5f) {
-            hatches.addAll(geoUtils.subdivideLine(sortedPoints[p], sortedPoints[p+1], 0, 1));
+    for (RShape line: fill.children) {  // NOTE: get height is not reliable for all shapes adding some buffer
+      if(line.getPoints() != null){
+        RPoint firstPoint = line.getPoints()[0];
+        RPoint lastPoint = line.getPoints()[line.getPoints().length - 1];
+        RPoint[] points = shape.getIntersections(line);
+        
+        if(points!=null) {
+          // these intersection points are not in order. we have to sort them first.
+          RPoint[] sortedPoints = sortPoints(points,firstPoint,shape.getWidth()*shape.getHeight());
+          
+          lines.addChild(RG.getLine(firstPoint.x,firstPoint.y,sortedPoints[0].x,sortedPoints[0].y));
+          
+  
+          int iterLength = sortedPoints.length;
+          for(int p=0; p<iterLength-1; p+=1) {
+            if(sortedPoints[p].dist(sortedPoints[p+1])>.5f) {
+              lines.addChild(RG.getLine(sortedPoints[p].x,sortedPoints[p].y,sortedPoints[p+1].x,sortedPoints[p+1].y));
+            }
           }
+          lines.addChild(RG.getLine(sortedPoints[sortedPoints.length - 1].x,sortedPoints[sortedPoints.length - 1].y,lastPoint.x,lastPoint.y));
+          
+        } else {
+          lines.addChild(RG.getLine(firstPoint.x,firstPoint.y,lastPoint.x,lastPoint.y));
         }
-      } 
+      }
     }
-    RShape shapeHatches = pointsToShape(hatches);
-    shapeHatches.setStrokeWeight(.5f);
-    shapeHatches.setFillAlpha(0);
+    
+    lines.setStrokeWeight(.5f);
+    lines.setFillAlpha(0);
     
     RShape innerHatches = new RShape();
-    for (RShape child: shapeHatches.children){
-      if (shape.contains(child.paths[0].getPoint(.5).x, child.paths[0].getPoint(.5).y)) innerHatches.addChild(child);
+    if(lines.children != null){
+      for (RShape child: lines.children){
+        if (shape.contains(child.paths[0].getPoint(.5).x, child.paths[0].getPoint(.5).y)) innerHatches.addChild(child);
+      }
     }
     
     return innerHatches;
-  }
-  
-  public ArrayList<ArrayList<RPoint>> subdivideLine(RPoint p1, RPoint p2, float _brightness, float _detailScale){
-    ArrayList<ArrayList<RPoint>> linesPoints = new ArrayList<ArrayList<RPoint>>();
-    
-    if (_brightness==0) {
-      // if it is meant to be black, just one long line
-      ArrayList<RPoint> linePoints = new ArrayList<RPoint>();
-      linePoints.add(p1);
-      linePoints.add(p2);
-      linesPoints.add(linePoints);
-    } else if (_brightness!=1) {
-      // if meant to be white, don't draw anything
-      
-      // now handle shades between
-
-      // pick a slightly randomized number of segments based on the brightness and line length
-      
-      float lineLength = p1.dist(p2);
-      float topRange = min(50*_detailScale,lineLength);
-      float combinedLength = random(20*_detailScale,topRange);
-      if(combinedLength>lineLength) combinedLength=lineLength;
-      
-      
-      int numSegments = (int) (lineLength / combinedLength);
-      
-      float combinedLengthAdj = lineLength / numSegments / lineLength; // normalized
-      
-      // calculate (normalized) segment length based on number segments and fillPercent
-      // middle floatskews things a bit toward void length to account for pen width
-      float segLength = (1f-_brightness) * .8f * combinedLengthAdj; 
-      float voidLength = (combinedLengthAdj - segLength);
-      
-      
-      if (segLength*lineLength > 4  || _brightness < .3) {
-        
-        RShape line = RG.getLine(p1.x,  p1.y,  p2.x,  p2.y);
-        if(segLength*lineLength <= 4 && _brightness < .3) {
-          // just one line
-          ArrayList<RPoint> linePoints = new ArrayList<RPoint>();
-          linePoints.add(p1);
-          linePoints.add(p2);
-          linesPoints.add(linePoints);
-        } else {
-          // find points along the path using geomerative
-          float start = random(voidLength);
-          for(int i=0; i<numSegments; i++) {
-            line.insertHandle(start);
-            float end = start + segLength;
-            line.insertHandle(end);
-            start = end+voidLength;
-          }
-          RPoint[] points = line.getPoints();
-          for (int i=1; i<points.length-2; i+=2) { // NOTE: using the insertHandle technique to have geometarive find the points generates an duplicate handle at the end.
-            ArrayList<RPoint> linePoints = new ArrayList<RPoint>();
-            linePoints.add(points[i]);
-            linePoints.add(points[i+1]);
-            linesPoints.add(linePoints);
-            
-          }
-        }
-      }
-    }
-    return linesPoints;
   }
   
   // used in image contours
