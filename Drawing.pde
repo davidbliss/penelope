@@ -69,6 +69,7 @@ public class Drawing{
     shape.addChild(circles.createCircle(int(canvas.width/2)+100, int(canvas.height/2), 100));
     shape.addChild(circles.createCircle(int(canvas.width/2)-400, int(canvas.height/2), 100));
     shape.addChild(RG.getLine(0,0,canvas.width, canvas.height));
+    shape.addChild(RG.getLine(canvas.width,0,canvas.width/2+100, canvas.height/2));
     
     RShape clipShape = circles.createCircle(int(canvas.width/2+100), int(canvas.height/2), 400);
     
@@ -115,6 +116,9 @@ public class Drawing{
     println("drawing done");
   }
   
+  // TODO: move this to geoUtils
+  // TODO: compare to fill
+  // TODO: see about implementing to support inverse
   RShape clipShape(RShape shape, RShape clipShape){
     RShape newShape = new RShape();
     if(shape.countChildren() > 0){
@@ -134,7 +138,6 @@ public class Drawing{
         } else {
           println("path is to be dealt with", shape.getPoints().length);
           
-          RPath newPath = new RPath();
           ArrayList<ArrayList<RPoint>> pointsList = new ArrayList<ArrayList<RPoint>>();
           ArrayList<RPoint> points = new ArrayList<RPoint>();
           RPoint[] pathPoints = shape.getPoints();
@@ -150,27 +153,54 @@ public class Drawing{
               points.add(pathPoints[i+1]);
             } else {
               RShape line = RG.getLine(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
-              RPoint[] intersection = line.getIntersections(clipShape);
-              if (intersection == null) {
+              RPoint[] intersections = line.getIntersections(clipShape);
+              if (intersections == null) {
                 //println("line has no intersections");
-              } else if (intersection.length==1){
+              } else if (intersections.length==1){
                 //println("line has one intersection");
                 if(clipShape.contains(pathPoints[i])){
                   points.add(pathPoints[i]);
-                  points.add(intersection[0]);
+                  points.add(intersections[0]);
                   penDown = false;
                 } else {
-                  points.add(intersection[0]);
+                  points.add(intersections[0]);
                   points.add(pathPoints[i+1]);
                   penDown = true;
                 }
-              } else if (intersection.length>1){
-                // TODO: this is more difficult could intersect many times, make a line from each and test if midpoint is in or out
-                println("line has multiple intersections", intersection.length);
+              } else if (intersections.length>1){
+                println("line has multiple intersections", intersections.length);
+                
+                // intersections need to be sorted
+                intersections = geoUtils.sortPoints(intersections, pathPoints[i], canvas.width*canvas.height);
+                
+                // handle point to first intersection
+                if (lineIn(pathPoints[i], intersections[0], clipShape)==true){
+                  points.add(pathPoints[i]);
+                  points.add(intersections[0]);
+                } else {
+                  pointsList.add(points);
+                  points = new ArrayList<RPoint>();
+                }
+                
+                for(int j=0; j < intersections.length-1; j++) {
+                  if (lineIn(intersections[j], intersections[j+1], clipShape)==true){
+                    points.add(intersections[j]);
+                    points.add(intersections[j+1]);
+                  } else {
+                    pointsList.add(points);
+                    points = new ArrayList<RPoint>();
+                  }
+                }
+                
+                if (lineIn(intersections[intersections.length-1], pathPoints[i+1], clipShape)==true){
+                  points.add(intersections[intersections.length-1]);
+                  points.add(pathPoints[i+1]);
+                }
               } 
               
             }
           }
+          
           // TODO: handle final point to first point
           
           pointsList.add(points);
@@ -179,6 +209,12 @@ public class Drawing{
       }
     }
     return newShape;
+  }
+  
+  Boolean lineIn(RPoint start, RPoint end, RShape clipShape){
+    RShape line = RG.getLine(start.x, start.y, end.x, end.y);
+    
+    return clipShape.contains(line.getPoint(.5));
   }
   
   void processImage(){
