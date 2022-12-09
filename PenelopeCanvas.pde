@@ -13,7 +13,6 @@ public class PenelopeCanvas {
   int numLayers;
   ArrayList<RShape> layers;
   RShape boundaries;
-  RShape circleBoundary;
   RPath leftPath;
   RPath rightPath;
   RPath topPath;
@@ -57,7 +56,6 @@ public class PenelopeCanvas {
     graphics = createGraphics(width, height);
     
     boundaries = RShape.createRectangle(margin, margin, width-2*margin, height-2*margin);
-    circleBoundary = RShape.createEllipse(width/2, height/2, width-2*margin, height-2*margin);
     
     leftPath = new RPath(new RCommand(margin, margin, margin, height - margin));
     rightPath = new RPath(new RCommand(width - margin, margin, width - margin, height - margin));
@@ -108,13 +106,15 @@ public class PenelopeCanvas {
     println("PenelopeCanvas save finished.");
   }
   
+  // add RShape to a given layer of canvas
   public void addShape(int layerNum, RShape shape){
     RShape layer = layers.get(layerNum);
     
     layer.addChild(shape);
   }
   
-  public void addMaskedShape(int layerNum, ArrayList<PVector> points){
+  // add an ArrayList of PVectors to the canvas, masking exhisting content and clipping new content
+  public void addMaskedPath(int layerNum, ArrayList<PVector> points){
     RShape layer = layers.get(layerNum);
     RShape newShape = new RShape();
     RPath newLine = new RPath(points.get(0).x, points.get(0).y);
@@ -134,6 +134,8 @@ public class PenelopeCanvas {
     layer.addChild(layeredShape);
   }
   
+  // TODO: test this out test this with the previous content and the fill content, what are limitations?
+  // add am RShape to the canvas, masking exhisting content and clipping new content
   public void addMaskedShape(int layerNum, RShape shape){
     RShape layer = layers.get(layerNum);
     
@@ -145,27 +147,26 @@ public class PenelopeCanvas {
     layers.set(layerNum, layeredShape);
   }
     
-  // add a shape to another, and knock out any lines inside the new shape
+  // TODO: Test this test this with the previous content and the fill content, what are limitations?
+  // add a new shape to existing shape, and knock out any lines in the existing shape that fall inside the new shape
   public RShape maskShape(RShape originalShape, RShape newShape){
     if(originalShape.countChildren()==0){
       originalShape.addChild(newShape);
     } else {
-      originalShape = RG.diff(originalShape, newShape);
-      originalShape.addChild(newShape);
+      originalShape.addChild(RG.diff(originalShape, newShape));
     }
     return originalShape;
   }
-    
-  // use built in intersection to clip complex shapes
-  public RShape clipShape(RShape originalShape, RShape clipShape){
-    originalShape = RG.intersection( originalShape, clipShape);
-    return originalShape;
+  
+  // TODO: test this with the previous content and the fill content, what are limitations?
+  // clip the shape using the clipShape
+  // uses built in intersection to clip complex shapes
+  public RShape clipShape(RShape shape, RShape clipShape){
+    return RG.intersection(shape, clipShape);
   }
   
-  
+  // add an ArrayList of points to the canvas without clipping them to margin
   public void addPath(int layerNum, ArrayList<RPoint> points){
-    //println("addClippedPath, from points", layerNum, points.size());
-    
     RPath path = new RPath(points.get(0).x, points.get(0).y);
     
     for (int p = 1; p < points.size(); p++){
@@ -177,8 +178,8 @@ public class PenelopeCanvas {
       if (path.getHandles() !=null && path.getHandles().length>0) layers.get(layerNum).addChild(shape);
   }
   
-  // manual clipping
-  // this is used to draw open lines that are clipped to the margin of the page
+  // add an ArrayList of points to the canvas after clipping it with the margin
+  // used to draw open lines that are clipped to the margin of the page
   // this is an option to useing Geomerative, which closes shapes to run intersection with margin. and is also quite a bit slower
   public ArrayList<ArrayList<RPoint>> clipPath(ArrayList<RPoint> points){
     //println("addClippedPath, from points", layerNum, points.size());
@@ -219,63 +220,8 @@ public class PenelopeCanvas {
     return output;
   }
   
-  public ArrayList<ArrayList<RPoint>> clipPathCircle(ArrayList<RPoint> points){
-    //println("addClippedPath, from points", layerNum, points.size());
-    
-    ArrayList<ArrayList<RPoint>> output = new ArrayList<ArrayList<RPoint>>();
-    ArrayList<RPoint> path = new ArrayList<RPoint>();
-    
-    for (int p = 1; p < points.size(); p++){
-      // See if crop is needed and to which side
-      int offScreenPoints = offscreenPointsCircle(points.get(p-1), points.get(p));
-      
-      RPath segment = new RPath(new RCommand(points.get(p-1).x, points.get(p-1).y, points.get(p).x, points.get(p).y));
-      
-      RPath clippedSegment = clipPathCircle(segment);
-       
-      if(clippedSegment!=null){
-        if (path.size()==0) path.add(clippedSegment.getHandles()[0]);
-        path.add(clippedSegment.getHandles()[1]);
-        
-        
-        if (offScreenPoints == 2 || offScreenPoints == 3 ){
-          if (path.size()>1) output.add(path);
-          path = new ArrayList<RPoint>();
-        }
-      } else {
-        // null clippedSegment means that it was entirely out of bounds
-         
-        if (path.size()>1) output.add(path);
-        path = new ArrayList<RPoint>();
-      }
-    }
-    
-    if (path.size()>1) output.add(path);
-    return output;
-  }
-  
-  public void processRemainingPoints(ArrayList<RPoint> points, int p){
-    //println("processRemainingPoints", p, points.size());
-    // we already tested the line between 0 and 1, no reason to continue if there are not more than 2 points in the list
-    if(points.size()>1){
-      // if a couple thousand of these points are out of range, you hit a stack overflow if you just recursively call the function, so we get rid of them all at once
-      for(int p1 = p; p1<points.size()-1; p1++){
-        RPoint point1 = points.get(p1);
-        RPoint point2 = points.get(p1+1);
-        if(point1.x >= margin && point1.x <= width-margin && point1.y >= margin && point1.y <= height-margin ||
-         point2.x >= margin && point2.x <= width-margin && point2.y >= margin && point2.y <= height-margin){
-          // confirm this works
-          ArrayList<RPoint> newPoints = new ArrayList<RPoint>(points.subList(p1, points.size()));
-          clipPath(newPoints);
-          break;
-        }
-      }
-    }
-  }
-  
+  // add an ArrayList of points to the canvas after clipping it to the margin
   public void addClippedPath(int layerNum, ArrayList<RPoint> points){
-    //println("addClippedPath, from points", layerNum, points.size());
-    
     RPath path = null;
     
     for (int p = 1; p < points.size(); p++){
@@ -320,9 +266,28 @@ public class PenelopeCanvas {
       shape.addPath(path);
       if (path !=null && path.getHandles().length>0) layers.get(layerNum).addChild(shape);
   }
+
+  // used in clipPath
+  private void processRemainingPoints(ArrayList<RPoint> points, int p){
+    // we already tested the line between 0 and 1, no reason to continue if there are not more than 2 points in the list
+    if(points.size()>1){
+      // if a couple thousand of these points are out of range, you hit a stack overflow if you just recursively call the function, so we get rid of them all at once
+      for(int p1 = p; p1<points.size()-1; p1++){
+        RPoint point1 = points.get(p1);
+        RPoint point2 = points.get(p1+1);
+        if(point1.x >= margin && point1.x <= width-margin && point1.y >= margin && point1.y <= height-margin ||
+         point2.x >= margin && point2.x <= width-margin && point2.y >= margin && point2.y <= height-margin){
+          // confirm this works
+          ArrayList<RPoint> newPoints = new ArrayList<RPoint>(points.subList(p1, points.size()));
+          clipPath(newPoints);
+          break;
+        }
+      }
+    }
+  }
   
-  public void processRemainingPoints(ArrayList<RPoint> points, int p, int layerNum){
-    //println("processRemainingPoints", p, points.size());
+  // used in addClippedPath
+  private void processRemainingPoints(ArrayList<RPoint> points, int p, int layerNum){
     // we already tested the line between 0 and 1, no reason to continue if there are not more than 2 points in the list
     if(points.size()>1){
       // if a couple thousand of these points are out of range, you hit a stack overflow if you just recursively call the function, so we get rid of them all at once
@@ -361,64 +326,7 @@ public class PenelopeCanvas {
     }
   }
   
-  public int offscreenPointsCircle(RPoint rPoint, RPoint rPoint2){
-    if (circleBoundary.contains(rPoint)==true && circleBoundary.contains(rPoint2)==true ){
-      // both of the two points are inside the margins
-      return 0;
-    } else if (circleBoundary.contains(rPoint)==false){
-      return 1;
-    } else if (circleBoundary.contains(rPoint2)==false) {
-      return 2;
-    } else {
-      // both of the two points are outside the margins
-      return 3;
-    }
-  }
-  
-  public RPath clipPathCircle(RPath originalPath){
-    RPoint[] handles = originalPath.getHandles();
-    // determine if path is outside of bounds entirely
-    if (circleBoundary.contains(handles[0])==false && circleBoundary.contains(handles[1])==false ) {
-//      println("line is outside of bounds");
-      return null;
-    }
-    
-    RPoint[] intersections = null;
-    
-    // for some reason intersectionPoints does not work circle path, so instead test each pair of points, one at a time. 
-    for (int i = 0; i < circleBoundary.paths[0].getPoints().length; i++) {
-      RPoint point = circleBoundary.paths[0].getPoints()[i];
-      int ni = i+1;
-      if(ni>=circleBoundary.paths[0].getPoints().length)ni=0;
-      
-      RPath pathToCheck = new RPath(point);
-      pathToCheck.addLineTo(circleBoundary.paths[0].getPoints()[ni]);
-      intersections = originalPath.intersectionPoints(pathToCheck);
-      if (intersections!=null) break;
-    }
-
-//    println("intersections",intersections);
-//    println("intersections.length",intersections.length);
-    
-    if (intersections!=null && intersections.length==1){
-      if(circleBoundary.contains(handles[0])==false){
-        originalPath = new RPath(new RCommand(intersections[0], handles[1]));
-//        addShape(0,RShape.createCircle(handles[1].x, handles[1].y, 10));
-//        addShape(0,RShape.createCircle(intersections[0].x, intersections[0].y, 10));
-      } else if (circleBoundary.contains(handles[0])==true){
-        originalPath = new RPath(new RCommand(handles[0], intersections[0]));
-//        addShape(0,RShape.createCircle(handles[0].x, handles[0].y, 10));
-//        addShape(0,RShape.createCircle(intersections[0].x, intersections[0].y, 10));
-      } else {
-        println("ERROR: can't determine how to crop");
-      }
-    } else if (intersections !=null && intersections.length>1){
-      println("ERROR: somehow there was more than one left intersection");
-    }
-    
-    return originalPath;
-  }
-  
+  // clip RPath using the canvas margin
   public RPath clipPath(RPath originalPath){
     // determine if path is outside of bounds entirely
     if(! boundaries.intersects(originalPath)) {
@@ -483,72 +391,5 @@ public class PenelopeCanvas {
     }
     
     return originalPath;
-  }
-  
-  // start signature
-  public void sign(int layerNum){
-    int sigWidth=50;
-    
-    float w = sigWidth/5;
-    float h = w*1.75f;
-    float k = w/4;
-    float r = w/3;
-    
-    float x = width - margin - sigWidth;
-    float y = height - margin - h;
-    
-    RShape lopShape = new RShape();
-    RPath lop = new RPath(x,y-h);
-    
-    //l
-    lop = addArcTo(lop, x+r, y+w/2-r, r, PI, HALF_PI);
-    x += r;
-    
-    //o
-    lop = addArcTo(lop, x+w/2, y, w/2, HALF_PI, -3 * HALF_PI);
-    x += w+k;
-    
-    //p
-    lop = addArcTo(lop, x+w/2, y, w/2, HALF_PI, -2 * HALF_PI);
-    lop.addLineTo(x,y);
-    lop.addLineTo(x,y+h);
-    
-    lopShape.addPath(lop);
-    
-    x += w+k;
-    
-    RShape gaShape = new RShape();
-    RPath ga = new RPath(x,y+h-w/2);
-    
-    //g
-    ga = addArcTo(ga, x+w/2, y+h-w/2, w/2, PI, 0);
-    ga.addLineTo(x+w,y);
-    ga = addArcTo(ga, x+w/2, y, w/2, 0, -3 * HALF_PI);
-    x += w+k;
-    
-    //a
-    ga.addLineTo(x+w,y+w/2);
-    ga.addLineTo(x+w,y);
-    ga = addArcTo(ga, x+w/2, y, w/2, 0, -3 * HALF_PI);
-    ga.addLineTo(x+w,y+w/2);
-    
-    gaShape.addPath(ga);
-    
-    // NOTE: adding each stroke to it's own shape before adding them to layer keeps paths from being closed automatically
-    layers.get(layerNum).addChild(lopShape);
-    layers.get(layerNum).addChild(gaShape);
-  }
-
-  RPath addArcTo(RPath path, float x, float y, float r, float start, float end){
-    float arcLength = end - start;
-    float segmentLength = QUARTER_PI/3;
-    if(arcLength<0) segmentLength *= -1;
-    int numSegments = abs(ceil(arcLength / segmentLength));
-    for (int i = 0; i <= numSegments; i++){
-      float thisX = x + r * cos(start+i*segmentLength);
-      float thisY = y + r * sin(start+i*segmentLength);
-      path.addLineTo(thisX, thisY);
-    }
-    return path;
   }
 }

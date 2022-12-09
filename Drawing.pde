@@ -72,59 +72,6 @@ public class Drawing{
     // contours (requires image to be loaded)
     
     // This uses the newer, clipShape call
-    //int numContours = int(parameters.cp5.getController("numContours").getValue());
-    //if(levels != null){
-    //  for (int i=0; i<numContours; i++){
-    //    println("drawing level", i);
-        
-    //    RShape contours = levels.get(i).getContours();
-        
-    //    float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
-    //    float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
-        
-    //    if (i < numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
-        
-    //    float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
-    //    float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
-    //    float scale = scaleY;
-    //    if (scaleX < scaleY) scale = scaleX;
-        
-    //    int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
-    //    int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
-    //    contours.scale(scale);
-    //    contours.translate(offsetX, offsetY);
-        
-    //    if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
-    //      float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
-          
-    //      //
-    //      RShape fill = new RShape();
-    //      int minDim = (int)contours.getTopLeft().x;
-    //      int maxDim = (int)contours.getTopLeft().x + (int)contours.getWidth();
-          
-    //      for (float l=minDim-10; l<maxDim+10; l+=fillSpacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
-    //        RPoint lineBegin = new RPoint(l,(int)contours.getTopLeft().y);
-    //        RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-10, l, (int)contours.getTopLeft().y + contours.getHeight()+10);
-    //        fill.addChild(cuttingLine);
-    //      }
-          
-    //      RShape clippedFill = geoUtils.clipShape(fill, contours);
-    //      //
-          
-    //      canvas.addShape(canvasLayer, clippedFill);
-    //    }
-        
-    //    if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
-    //  }
-    //  if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
-    //}
-    
-    
-    
-    
-    // contours (requires image to be loaded)
-    //// TODO: time this and compare to alternate
-    //// This uses the older fillWithLines call 
     int numContours = int(parameters.cp5.getController("numContours").getValue());
     if(levels != null){
       for (int i=0; i<numContours; i++){
@@ -149,15 +96,29 @@ public class Drawing{
         
         if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
           float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
-          RShape fill = geoUtils.fillWithLines(contours, fillSpacing, true);
-          canvas.addShape(canvasLayer, fill);
+          
+          //
+          RShape fill = new RShape();
+          int minDim = (int)contours.getTopLeft().x;
+          int maxDim = (int)contours.getTopLeft().x + (int)contours.getWidth();
+          
+          for (float l=minDim-10; l<maxDim+10; l+=fillSpacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
+            RPoint lineBegin = new RPoint(l,(int)contours.getTopLeft().y);
+            RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-10, l, (int)contours.getTopLeft().y + contours.getHeight()+10);
+            fill.addChild(cuttingLine);
+          }
+          
+          RShape clippedFill = geoUtils.clipShape(fill, contours);
+          //
+          
+          canvas.addShape(canvasLayer, clippedFill);
         }
         
         if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
       }
       if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
     }
-    
+       
     println("drawing done");
   }
   
