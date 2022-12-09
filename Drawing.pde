@@ -53,33 +53,25 @@ public class Drawing{
     //words.scale(10);
     //canvas.addShape(2, words);
     
+    
+    
+    ////This uses the newer, clipShape call: created as test case
+    //RShape circles = generateCircles(int(canvas.width/2), int(canvas.height/2), 200, 5);
+    //RShape shape = new RShape();
+    //shape.addChild(circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400));
+    //shape.addChild(circles.createCircle(int(canvas.width/2)+20, int(canvas.height/2), 400));
+    //shape.addChild(circles.createCircle(int(canvas.width/2)+100, int(canvas.height/2), 100));
+    //shape.addChild(circles.createCircle(int(canvas.width/2)-400, int(canvas.height/2), 100));
+    //shape.addChild(RG.getLine(0,0,canvas.width, canvas.height));
+    //shape.addChild(RG.getLine(canvas.width,0,canvas.width/2+100, canvas.height/2));
+    //RShape clipShape = circles.createCircle(int(canvas.width/2+100), int(canvas.height/2), 400);
+    //RShape newShape = geoUtils.clipShape(shape, clipShape);
+    //canvas.addShape(1, newShape);
+    //canvas.addShape(1, clipShape);
+    
     // contours (requires image to be loaded)
     
-    RShape circles = generateCircles(int(canvas.width/2), int(canvas.height/2), 200, 5);
-    //canvas.addShape(1, circles);
-    RShape circles2 = generateCircles(int(canvas.width/2)+100, int(canvas.height/2)+100, 200, 5);
-    circles2.polygonize();
-    //RShape circles3 = geoUtils.iterativelyClip(circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400),  circles2);
-    
-    RShape circles3 = RG.diff(circles2, circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400));
-    
-    RShape shape = new RShape();
-    shape.addChild(circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400));
-    shape.addChild(circles.createCircle(int(canvas.width/2)+20, int(canvas.height/2), 400));
-    shape.addChild(circles.createCircle(int(canvas.width/2)+100, int(canvas.height/2), 100));
-    shape.addChild(circles.createCircle(int(canvas.width/2)-400, int(canvas.height/2), 100));
-    shape.addChild(RG.getLine(0,0,canvas.width, canvas.height));
-    shape.addChild(RG.getLine(canvas.width,0,canvas.width/2+100, canvas.height/2));
-    
-    RShape clipShape = circles.createCircle(int(canvas.width/2+100), int(canvas.height/2), 400);
-    
-    RShape newShape = clipShape(shape, clipShape);
-    
-    //canvas.addShape(1, shape);
-    canvas.addShape(1, newShape);
-    canvas.addShape(1, clipShape);
-    
-    
+    // This uses the newer, clipShape call
     //int numContours = int(parameters.cp5.getController("numContours").getValue());
     //if(levels != null){
     //  for (int i=0; i<numContours; i++){
@@ -104,8 +96,22 @@ public class Drawing{
         
     //    if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
     //      float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
-    //      RShape fill = geoUtils.fill(contours, fillSpacing, true);
-    //      canvas.addShape(canvasLayer, fill);
+          
+    //      //
+    //      RShape fill = new RShape();
+    //      int minDim = (int)contours.getTopLeft().x;
+    //      int maxDim = (int)contours.getTopLeft().x + (int)contours.getWidth();
+          
+    //      for (float l=minDim-10; l<maxDim+10; l+=fillSpacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
+    //        RPoint lineBegin = new RPoint(l,(int)contours.getTopLeft().y);
+    //        RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-10, l, (int)contours.getTopLeft().y + contours.getHeight()+10);
+    //        fill.addChild(cuttingLine);
+    //      }
+          
+    //      RShape clippedFill = geoUtils.clipShape(fill, contours);
+    //      //
+          
+    //      canvas.addShape(canvasLayer, clippedFill);
     //    }
         
     //    if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
@@ -113,108 +119,46 @@ public class Drawing{
     //  if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
     //}
     
-    println("drawing done");
-  }
-  
-  // TODO: move this to geoUtils
-  // TODO: compare to fill
-  // TODO: see about implementing to support inverse
-  RShape clipShape(RShape shape, RShape clipShape){
-    RShape newShape = new RShape();
-    if(shape.countChildren() > 0){
-      for(RShape child: shape.children){
-        newShape.addChild( clipShape(child, clipShape) );
-      }
-    }
-    if(shape.countPaths() > 0){
-      for(RPath path: shape.paths){
-        if(clipShape.contains(path) == true) {
-          // if path is entirely inside, add it
-          newShape.addChild(new RShape(path));
-          println("path is entirely inside");
-        } else if(clipShape.getIntersections(new RShape(path)) == null){
-          // if path is entirely outside, ignore it
-          println("path is entirely outside");
-        } else {
-          println("path is to be dealt with", shape.getPoints().length);
-          
-          ArrayList<ArrayList<RPoint>> pointsList = new ArrayList<ArrayList<RPoint>>();
-          ArrayList<RPoint> points = new ArrayList<RPoint>();
-          RPoint[] pathPoints = shape.getPoints();
-          
-          Boolean penDown = false;
-          for(int i=0; i < shape.getPoints().length-1; i++) {
-            if( clipShape.contains(pathPoints[i]) && clipShape.contains(pathPoints[i+1])) {
-              // both points are inside
-              if (penDown == false){
-                points.add(pathPoints[i]);
-                penDown = true;
-              }
-              points.add(pathPoints[i+1]);
-            } else {
-              RShape line = RG.getLine(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
-              RPoint[] intersections = line.getIntersections(clipShape);
-              if (intersections == null) {
-                //println("line has no intersections");
-              } else if (intersections.length==1){
-                //println("line has one intersection");
-                if(clipShape.contains(pathPoints[i])){
-                  points.add(pathPoints[i]);
-                  points.add(intersections[0]);
-                  penDown = false;
-                } else {
-                  points.add(intersections[0]);
-                  points.add(pathPoints[i+1]);
-                  penDown = true;
-                }
-              } else if (intersections.length>1){
-                println("line has multiple intersections", intersections.length);
-                
-                // intersections need to be sorted
-                intersections = geoUtils.sortPoints(intersections, pathPoints[i], canvas.width*canvas.height);
-                
-                // handle point to first intersection
-                if (lineIn(pathPoints[i], intersections[0], clipShape)==true){
-                  points.add(pathPoints[i]);
-                  points.add(intersections[0]);
-                } else {
-                  pointsList.add(points);
-                  points = new ArrayList<RPoint>();
-                }
-                
-                for(int j=0; j < intersections.length-1; j++) {
-                  if (lineIn(intersections[j], intersections[j+1], clipShape)==true){
-                    points.add(intersections[j]);
-                    points.add(intersections[j+1]);
-                  } else {
-                    pointsList.add(points);
-                    points = new ArrayList<RPoint>();
-                  }
-                }
-                
-                if (lineIn(intersections[intersections.length-1], pathPoints[i+1], clipShape)==true){
-                  points.add(intersections[intersections.length-1]);
-                  points.add(pathPoints[i+1]);
-                }
-              } 
-              
-            }
-          }
-          
-          // TODO: handle final point to first point
-          
-          pointsList.add(points);
-          newShape.addChild(geoUtils.pointsToShape(pointsList));
-        }
-      }
-    }
-    return newShape;
-  }
-  
-  Boolean lineIn(RPoint start, RPoint end, RShape clipShape){
-    RShape line = RG.getLine(start.x, start.y, end.x, end.y);
     
-    return clipShape.contains(line.getPoint(.5));
+    
+    
+    // contours (requires image to be loaded)
+    //// TODO: time this and compare to alternate
+    //// This uses the older fillWithLines call 
+    int numContours = int(parameters.cp5.getController("numContours").getValue());
+    if(levels != null){
+      for (int i=0; i<numContours; i++){
+        println("drawing level", i);
+        
+        RShape contours = levels.get(i).getContours();
+        
+        float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
+        float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
+        
+        if (i < numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
+        
+        float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
+        float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
+        float scale = scaleY;
+        if (scaleX < scaleY) scale = scaleX;
+        
+        int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
+        int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
+        contours.scale(scale);
+        contours.translate(offsetX, offsetY);
+        
+        if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
+          float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
+          RShape fill = geoUtils.fillWithLines(contours, fillSpacing, true);
+          canvas.addShape(canvasLayer, fill);
+        }
+        
+        if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
+      }
+      if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
+    }
+    
+    println("drawing done");
   }
   
   void processImage(){

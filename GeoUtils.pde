@@ -1,25 +1,104 @@
 //TODO: some functions in this class(like filterJaggedLines) handle nested shapes, others (like thickenLines) do not; need to come to terms with that to improve reusability
 
 public class GeoUtils {
-  public RPoint[] sortPoints (RPoint[] points, RPoint basePoint, float startDistance) {
-    RPoint[] sortedPoints = new RPoint[points.length];
-    for(int j=0; j<points.length; j++) {
-      float minDistance = startDistance;
-      int closestIndex = 0;
-      for(int k=0; k<points.length; k++) {
-        if(basePoint.dist(points[k])<minDistance) {
-          minDistance = basePoint.dist(points[k]);
-          closestIndex = k;
+  // TODO: see about implementing to support inverse of clipShape
+  
+  // new way to clip a shape based on other shape, more flexible than previous fill process
+  RShape clipShape(RShape shape, RShape clipShape){
+    RShape newShape = new RShape();
+    if(shape.countChildren() > 0){
+      for(RShape child: shape.children){
+        newShape.addChild( clipShape(child, clipShape) );
+      }
+    }
+    if(shape.countPaths() > 0){
+      for(RPath path: shape.paths){
+        if(clipShape.contains(path) == true) {
+          // if path is entirely inside, add it
+          newShape.addChild(new RShape(path));
+        } else if(clipShape.getIntersections(new RShape(path)) == null){
+          // if path is entirely outside, ignore it
+        } else {
+          ArrayList<ArrayList<RPoint>> pointsList = new ArrayList<ArrayList<RPoint>>();
+          ArrayList<RPoint> points = new ArrayList<RPoint>();
+          RPoint[] pathPoints = shape.getPoints();
+          
+          Boolean penDown = false;
+          for(int i=0; i < shape.getPoints().length-1; i++) {
+            if( clipShape.contains(pathPoints[i]) && clipShape.contains(pathPoints[i+1])) {
+              // both points are inside
+              if (penDown == false){
+                points.add(pathPoints[i]);
+                penDown = true;
+              }
+              points.add(pathPoints[i+1]);
+            } else {
+              RShape line = RG.getLine(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
+              RPoint[] intersections = line.getIntersections(clipShape);
+              if (intersections == null) {
+                // ignore
+              } else if (intersections.length==1){
+                if(clipShape.contains(pathPoints[i])){
+                  points.add(pathPoints[i]);
+                  points.add(intersections[0]);
+                  penDown = false;
+                } else {
+                  points.add(intersections[0]);
+                  points.add(pathPoints[i+1]);
+                  penDown = true;
+                }
+              } else if (intersections.length>1){
+                // intersections need to be sorted
+                intersections = geoUtils.sortPoints(intersections, pathPoints[i], canvas.width*canvas.height);
+                
+                // handle point to first intersection
+                if (lineIn(pathPoints[i], intersections[0], clipShape)==true){
+                  points.add(pathPoints[i]);
+                  points.add(intersections[0]);
+                } else {
+                  pointsList.add(points);
+                  points = new ArrayList<RPoint>();
+                }
+                
+                for(int j=0; j < intersections.length-1; j++) {
+                  if (lineIn(intersections[j], intersections[j+1], clipShape)==true){
+                    points.add(intersections[j]);
+                    points.add(intersections[j+1]);
+                  } else {
+                    pointsList.add(points);
+                    points = new ArrayList<RPoint>();
+                  }
+                }
+                
+                if (lineIn(intersections[intersections.length-1], pathPoints[i+1], clipShape)==true){
+                  points.add(intersections[intersections.length-1]);
+                  points.add(pathPoints[i+1]);
+                }
+              } 
+              
+            }
+          }
+          
+          // TODO: handle final point to first point
+          
+          pointsList.add(points);
+          newShape.addChild(geoUtils.pointsToShape(pointsList));
         }
       }
-      sortedPoints[j]=new RPoint(points[closestIndex]);
-      points[closestIndex].x=startDistance;
-      points[closestIndex].y=startDistance;
     }
-    return sortedPoints;
+    return newShape;
   }
   
-  public RShape fill(RShape shape, float _spacing, boolean vertical){
+  // determine if a line is inside a clipShape based on its midpoint
+  Boolean lineIn(RPoint start, RPoint end, RShape clipShape){
+    RShape line = RG.getLine(start.x, start.y, end.x, end.y);
+    
+    return clipShape.contains(line.getPoint(.5));
+  }
+  
+  // older fill, same results, limited use-case, a bit faster than newer, more flexible clip. 
+  // creates parallel line fills for a given shape, uses fillClip for the fill
+  public RShape fillWithLines(RShape shape, float _spacing, boolean vertical){
     RShape fill = new RShape();
     int minDim = (vertical==true)? (int)shape.getTopLeft().x : (int)shape.getTopLeft().y;
     int maxDim = (vertical==true)? (int)shape.getTopLeft().x + (int)shape.getWidth() : (int)shape.getTopLeft().y + (int)shape.getHeight();
@@ -33,17 +112,18 @@ public class GeoUtils {
       }
       fill.addChild(cuttingLine);
     }
-    return iterativelyClip(shape, fill);
+    return iterativelyClipLines(shape, fill);
   }
   
-  public RShape iterativelyClip(RShape _layer, RShape fill) {
+  // iterates through shape, filling each part will fillClip
+  public RShape iterativelyClipLines(RShape _layer, RShape fill) {
     RShape fills = new RShape();
     if (_layer.children!=null) {
       for(RShape child: _layer.children) {
-        fills.addChild(iterativelyClip(child, fill));
+        fills.addChild(iterativelyClipLines(child, fill));
       }
     } else {
-      RShape thisfills = fillClip(_layer, fill); 
+      RShape thisfills = clipLines(_layer, fill); 
       if(thisfills.children!=null) {
         for (RShape child: thisfills.children) {
           child.setFill("none");
@@ -55,9 +135,9 @@ public class GeoUtils {
     return fills;
   }
   
-  public RShape fillClip(RShape shape, RShape fill) {
-    // NOTE: Added to support shapes more generically, might not work in apps using previous hatchFill.
-    // This only recognizes holes if the paths are combined as one.
+  // fill shape with another shape, assumes straight lines in the fill
+  // This only recognizes holes if the paths are combined as one.
+  public RShape clipLines(RShape shape, RShape fill) {
     RShape lines = new RShape();
     if(fill.children != null){
       for (RShape line: fill.children) {  // NOTE: get height is not reliable for all shapes adding some buffer
@@ -72,7 +152,6 @@ public class GeoUtils {
             
             lines.addChild(RG.getLine(firstPoint.x,firstPoint.y,sortedPoints[0].x,sortedPoints[0].y));
             
-    
             int iterLength = sortedPoints.length;
             for(int p=0; p<iterLength-1; p+=1) {
               if(sortedPoints[p].dist(sortedPoints[p+1])>.5f) {
@@ -101,7 +180,26 @@ public class GeoUtils {
     return innerHatches;
   }
   
-  // used in image contours
+  //Sorts points based on their distance from basepoint, startDistance shoud be a big number
+  public RPoint[] sortPoints (RPoint[] points, RPoint basePoint, float startDistance) {
+    RPoint[] sortedPoints = new RPoint[points.length];
+    for(int j=0; j<points.length; j++) {
+      float minDistance = startDistance;
+      int closestIndex = 0;
+      for(int k=0; k<points.length; k++) {
+        if(basePoint.dist(points[k])<minDistance) {
+          minDistance = basePoint.dist(points[k]);
+          closestIndex = k;
+        }
+      }
+      sortedPoints[j]=new RPoint(points[closestIndex]);
+      points[closestIndex].x=startDistance;
+      points[closestIndex].y=startDistance;
+    }
+    return sortedPoints;
+  }
+  
+  // reduces contours based on their proximity to one another
   public RShape findKeyContours(RShape _allContours, float _matchDistance, float _removeDistance) {
     ArrayList<ArrayList<RPoint>> keyPaths = new ArrayList<ArrayList<RPoint>> ();
     
@@ -216,6 +314,7 @@ public class GeoUtils {
     return pointsToShape(keyPaths);
   }
   
+  // remove short lines from shape if they are shorter than distance parameter
   public RShape filterShortLines(RShape _allShapes, float _distance) {
     ArrayList<ArrayList<RPoint>> filteredPaths = new ArrayList<ArrayList<RPoint>> ();
     
@@ -248,6 +347,7 @@ public class GeoUtils {
     return pointsToShape(filteredPaths);
   }
   
+  // remove shapes from shape if they are smaller than area parameter
   public RShape filterSmallArea(RShape _allShapes, float _area) {
     ArrayList<ArrayList<RPoint>> filteredPaths = new ArrayList<ArrayList<RPoint>> ();
     
@@ -287,6 +387,7 @@ public class GeoUtils {
     return pointsToShape(filteredPaths);
   }
   
+  // join points of the lines if they are closer than distance parameter
   public RShape mergeLines(RShape _allShapes, float _distance) {
     ArrayList<ArrayList<RPoint>> filteredPaths = new ArrayList<ArrayList<RPoint>> ();
       
@@ -350,6 +451,7 @@ public class GeoUtils {
     return pointsToShape(filteredPaths);
   }
   
+  // remove short lines with sharp turns
   public RShape filterJaggedLines(RShape _allShapes, float _distance) {
     ArrayList<ArrayList<RPoint>> filteredPaths = new ArrayList<ArrayList<RPoint>> ();
     
@@ -399,10 +501,38 @@ public class GeoUtils {
         }
       }
     }
-    
     return pointsToShape(filteredPaths);
   }
   
+  private float angleBetween(RPoint p1, RPoint p2) {
+    float angle;
+    if (p2.y<p1.y) {
+      if (p2.x>p1.x) {
+        angle = atan((p1.y - p2.y) / (p2.x - p1.x)); 
+      } else if (p2.x<p1.x) {
+        angle = PI - atan((p1.y - p2.y) / (p1.x - p2.x));
+      } else {
+        angle = HALF_PI;
+      }
+    } else if (p2.y>p1.y) {
+      if (p2.x>p1.x) {
+        angle = TWO_PI -  atan((p2.y - p1.y) / (p2.x - p1.x));
+      } else if (p2.x<p1.x) {
+        angle =  PI + atan((p2.y - p1.y) / (p1.x - p2.x)); 
+      } else {
+        angle = TWO_PI - HALF_PI;
+      }
+    } else {
+      if (p2.x>p1.x) {
+        angle = 0;
+      } else {
+        angle = PI;
+      }
+    }
+    return angle;
+  }
+  
+  // crop line from both ends
   public ArrayList<RPoint> shortenPathBothEnds (ArrayList<RPoint> _path, float _distance) {
     // shorten front of line
     float distanceRemaining = _distance;
@@ -450,6 +580,7 @@ public class GeoUtils {
     return _path;
   }
   
+  // crop line from end
   public ArrayList<RPoint> shortenPathEnd (ArrayList<RPoint> _path, float _distance) {
     // shorten end of line
     float distanceRemaining = _distance;
@@ -475,6 +606,7 @@ public class GeoUtils {
     return _path;
   }
   
+  // reorder an arrayList of points from a random start point (so pen is not always starting at same point in concentric lines
   public ArrayList<RPoint> randomizePathStart(ArrayList<RPoint> _path) {
     // shorten end of line
     int startIndex = (int) random(0,_path.size());
@@ -487,7 +619,7 @@ public class GeoUtils {
     return newPath;
   }
   
-  
+  // add paths around each path
   public ArrayList<ArrayList<RPoint>> thickenPath(ArrayList<RPoint> _path, int _thickness, float _distance, boolean _roundCap, boolean _asOne){
     if(_roundCap==true) _path = shortenPathBothEnds (_path, _thickness*_distance);
     
@@ -589,10 +721,9 @@ public class GeoUtils {
     return thickenedPaths;
   }
   
+  // Add lines around a path in a given shape
   public RShape thickenLines(RShape _shape, int _thickness, float _distance, boolean _roundCap, boolean _asOne) {
-    
     ArrayList<ArrayList<RPoint>> thickenedPaths = new ArrayList<ArrayList<RPoint>> ();
-    
     ArrayList<ArrayList<RPoint>> allPathPoints = getPathPoints(_shape);
     
     if (allPathPoints!=null) {
@@ -600,41 +731,12 @@ public class GeoUtils {
         ArrayList<RPoint> pathPoints = allPathPoints.get(pth); //allPathPoints[pth];
         
         thickenedPaths.addAll(thickenPath(pathPoints, _thickness, _distance, _roundCap, _asOne));
-
       }
     }
-    
     return pointsToShape(thickenedPaths);
   }  
-
-  private float angleBetween(RPoint p1, RPoint p2) {
-    float angle;
-    if (p2.y<p1.y) {
-      if (p2.x>p1.x) {
-        angle = atan((p1.y - p2.y) / (p2.x - p1.x)); 
-      } else if (p2.x<p1.x) {
-        angle = PI - atan((p1.y - p2.y) / (p1.x - p2.x));
-      } else {
-        angle = HALF_PI;
-      }
-    } else if (p2.y>p1.y) {
-      if (p2.x>p1.x) {
-        angle = TWO_PI -  atan((p2.y - p1.y) / (p2.x - p1.x));
-      } else if (p2.x<p1.x) {
-        angle =  PI + atan((p2.y - p1.y) / (p1.x - p2.x)); 
-      } else {
-        angle = TWO_PI - HALF_PI;
-      }
-    } else {
-      if (p2.x>p1.x) {
-        angle = 0;
-      } else {
-        angle = PI;
-      }
-    }
-    return angle;
-  }
   
+  // used in several places
   private ArrayList<ArrayList<RPoint>> getPathPoints(RShape shape){
     ArrayList<ArrayList<RPoint>> pathPoints = new ArrayList<ArrayList<RPoint>> ();
     // NOTE: getPointsInPaths returns four points for a line.
@@ -657,10 +759,10 @@ public class GeoUtils {
         }
       }
     }
-    
     return pathPoints;
   }
   
+  // used in several places
   private RShape pointsToShape(ArrayList<ArrayList<RPoint>> _paths) {
     RShape output = new RShape();
 
@@ -673,7 +775,6 @@ public class GeoUtils {
         }
         
         RShape newShape = new RShape();
-//        newShape.setFill("none");
         newShape.addPath(rpath);
         output.addChild(newShape);
       }
@@ -682,7 +783,7 @@ public class GeoUtils {
     return output;
   }
   
-  
+  // used in several places
   private ArrayList<RPoint> createArc(float x, float y, float r, float start, float end){
     ArrayList<RPoint> path = new ArrayList<RPoint>();
     
