@@ -127,19 +127,51 @@ public class Drawing{
         if(clipShape.contains(path) == true) {
           // if path is entirely inside, add it
           newShape.addChild(new RShape(path));
+          println("path is entirely inside");
         } else if(clipShape.getIntersections(new RShape(path)) == null){
           // if path is entirely outside, ignore it
-        } else if(shape.getPoints() != null && shape.getPoints().length > 0){
+          println("path is entirely outside");
+        } else {
+          println("path is to be dealt with", shape.getPoints().length);
           
           RPath newPath = new RPath();
           ArrayList<ArrayList<RPoint>> pointsList = new ArrayList<ArrayList<RPoint>>();
           ArrayList<RPoint> points = new ArrayList<RPoint>();
           RPoint[] pathPoints = shape.getPoints();
           
-          // TODO: make this smare enought to crop lines that intersect
-          for(int i=0; i < shape.getPoints().length; i++) {
-            if(clipShape.contains(pathPoints[i])) points.add(pathPoints[i]);
+          Boolean penDown = false;
+          for(int i=0; i < shape.getPoints().length-1; i++) {
+            if( clipShape.contains(pathPoints[i]) && clipShape.contains(pathPoints[i+1])) {
+              // both points are inside
+              if (penDown == false){
+                points.add(pathPoints[i]);
+                penDown = true;
+              }
+              points.add(pathPoints[i+1]);
+            } else {
+              RShape line = RG.getLine(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
+              RPoint[] intersection = line.getIntersections(clipShape);
+              if (intersection == null) {
+                //println("line has no intersections");
+              } else if (intersection.length==1){
+                //println("line has one intersection");
+                if(clipShape.contains(pathPoints[i])){
+                  points.add(pathPoints[i]);
+                  points.add(intersection[0]);
+                  penDown = false;
+                } else {
+                  points.add(intersection[0]);
+                  points.add(pathPoints[i+1]);
+                  penDown = true;
+                }
+              } else if (intersection.length>1){
+                // TODO: this is more difficult could intersect many times, make a line from each and test if midpoint is in or out
+                println("line has multiple intersections", intersection.length);
+              } 
+              
+            }
           }
+          // TODO: handle final point to first point
           
           pointsList.add(points);
           newShape.addChild(geoUtils.pointsToShape(pointsList));
