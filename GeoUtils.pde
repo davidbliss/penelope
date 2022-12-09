@@ -79,7 +79,7 @@ public class GeoUtils {
             }
           }
           
-          // TODO: handle final point to first point
+          // TODO: FIRST handle final point to first point (if it is closed?)
           
           pointsList.add(points);
           newShape.addChild(geoUtils.pointsToShape(pointsList));

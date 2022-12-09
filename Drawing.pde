@@ -3,7 +3,7 @@
 // TODO: possible ideas for future:
   // sketch_210920_ga_linedrawing - draw lines and perterb them based on the current region they are within -- maybe levergaing some what is in the offest line code
   // sketch_210920_ga_linedrawing - connecting nearby points of similar brightness
-  // python - advanced contour management
+  // create keycontours example
 
 public class Drawing{
   Letters letters = new Letters();
@@ -109,8 +109,6 @@ public class Drawing{
           }
           
           RShape clippedFill = geoUtils.clipShape(fill, contours);
-          //
-          
           canvas.addShape(canvasLayer, clippedFill);
         }
         
