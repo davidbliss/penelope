@@ -55,41 +55,98 @@ public class Drawing{
     
     // contours (requires image to be loaded)
     
+    RShape circles = generateCircles(int(canvas.width/2), int(canvas.height/2), 200, 5);
+    //canvas.addShape(1, circles);
+    RShape circles2 = generateCircles(int(canvas.width/2)+100, int(canvas.height/2)+100, 200, 5);
+    circles2.polygonize();
+    //RShape circles3 = geoUtils.iterativelyClip(circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400),  circles2);
     
-    int numContours = int(parameters.cp5.getController("numContours").getValue());
-    if(levels != null){
-      for (int i=0; i<numContours; i++){
-        println("drawing level", i);
+    RShape circles3 = RG.diff(circles2, circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400));
+    
+    RShape shape = new RShape();
+    shape.addChild(circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400));
+    shape.addChild(circles.createCircle(int(canvas.width/2)+20, int(canvas.height/2), 400));
+    shape.addChild(circles.createCircle(int(canvas.width/2)+100, int(canvas.height/2), 100));
+    shape.addChild(circles.createCircle(int(canvas.width/2)-400, int(canvas.height/2), 100));
+    shape.addChild(RG.getLine(0,0,canvas.width, canvas.height));
+    
+    RShape clipShape = circles.createCircle(int(canvas.width/2+100), int(canvas.height/2), 400);
+    
+    RShape newShape = clipShape(shape, clipShape);
+    
+    //canvas.addShape(1, shape);
+    canvas.addShape(1, newShape);
+    canvas.addShape(1, clipShape);
+    
+    
+    //int numContours = int(parameters.cp5.getController("numContours").getValue());
+    //if(levels != null){
+    //  for (int i=0; i<numContours; i++){
+    //    println("drawing level", i);
         
-        RShape contours = levels.get(i).getContours();
+    //    RShape contours = levels.get(i).getContours();
         
-        float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
-        float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
+    //    float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
+    //    float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
         
-        if (i < numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
+    //    if (i < numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
         
-        float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
-        float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
-        float scale = scaleY;
-        if (scaleX < scaleY) scale = scaleX;
+    //    float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
+    //    float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
+    //    float scale = scaleY;
+    //    if (scaleX < scaleY) scale = scaleX;
         
-        int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
-        int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
-        contours.scale(scale);
-        contours.translate(offsetX, offsetY);
+    //    int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
+    //    int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
+    //    contours.scale(scale);
+    //    contours.translate(offsetX, offsetY);
         
-        if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
-          float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
-          RShape fill = geoUtils.fill(contours, fillSpacing, true);
-          canvas.addShape(canvasLayer, fill);
-        }
+    //    if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
+    //      float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
+    //      RShape fill = geoUtils.fill(contours, fillSpacing, true);
+    //      canvas.addShape(canvasLayer, fill);
+    //    }
         
-        if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
-      }
-      if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
-    }
+    //    if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
+    //  }
+    //  if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
+    //}
     
     println("drawing done");
+  }
+  
+  RShape clipShape(RShape shape, RShape clipShape){
+    RShape newShape = new RShape();
+    if(shape.countChildren() > 0){
+      for(RShape child: shape.children){
+        newShape.addChild( clipShape(child, clipShape) );
+      }
+    }
+    if(shape.countPaths() > 0){
+      for(RPath path: shape.paths){
+        if(clipShape.contains(path) == true) {
+          // if path is entirely inside, add it
+          newShape.addChild(new RShape(path));
+        } else if(clipShape.getIntersections(new RShape(path)) == null){
+          // if path is entirely outside, ignore it
+        } else if(shape.getPoints() != null && shape.getPoints().length > 0){
+          
+          RPath newPath = new RPath();
+          ArrayList<ArrayList<RPoint>> pointsList = new ArrayList<ArrayList<RPoint>>();
+          ArrayList<RPoint> points = new ArrayList<RPoint>();
+          RPoint[] pathPoints = shape.getPoints();
+          
+          // TODO: make this smare enought to crop lines that intersect
+          for(int i=0; i < shape.getPoints().length; i++) {
+            if(clipShape.contains(pathPoints[i])) points.add(pathPoints[i]);
+          }
+          
+          pointsList.add(points);
+          newShape.addChild(geoUtils.pointsToShape(pointsList));
+        }
+      }
+    }
+    return newShape;
   }
   
   void processImage(){
@@ -105,5 +162,15 @@ public class Drawing{
       levels.add(level);
     }
     println("image processing complete");
+  }
+  
+  RShape generateCircles(int x, int y, int r, float spacing) {
+    RShape shape = new RShape();
+    float currentRadius = spacing;
+    while (currentRadius < r){
+      shape.addChild(RShape.createCircle(float(x),float(y),currentRadius*2));
+      currentRadius += spacing;
+    }
+    return shape;
   }
 }
