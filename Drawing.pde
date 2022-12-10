@@ -53,8 +53,6 @@ public class Drawing{
     //words.scale(10);
     //canvas.addShape(2, words);
     
-    
-    
     //This uses the newer, clipShape call: created as test case
     RShape circles = generateCircles(int(canvas.width/2), int(canvas.height/2), 200, 5);
     RShape shape = new RShape();
@@ -65,14 +63,11 @@ public class Drawing{
     shape.addChild(RG.getLine(0,0,canvas.width, canvas.height));
     shape.addChild(RG.getLine(canvas.width,0,canvas.width/2+100, canvas.height/2));
     RShape clipShape = circles.createCircle(int(canvas.width/2+100), int(canvas.height/2), 400);
-    RShape newShape = geoUtils.clipShape(shape, clipShape, false);
-    canvas.addShape(1, newShape);
-    //canvas.addShape(0, clipShape);
-    
-    //canvas.addShape(2, RG.getEllipse(int(canvas.width/2+100), int(canvas.height/2)-500, 400, 400));
-    //canvas.addShape(2, RG.getEllipse(int(canvas.width/2), int(canvas.height/2)-500, 400, 400));
-    //canvas.addShape(2, geoUtils.clipShape(RG.getEllipse(int(canvas.width/2+100), int(canvas.height/2), 400, 400), RG.getEllipse(int(canvas.width/2), int(canvas.height/2), 400, 400)));
-    //canvas.addShape(2, geoUtils.diffShape(RG.getEllipse(int(canvas.width/2+100), int(canvas.height/2)+500, 400, 400), RG.getEllipse(int(canvas.width/2), int(canvas.height/2)+500, 400, 400)));
+    RShape newShape = geoUtils.clipShape(shape, clipShape);
+    RShape newShape2 = geoUtils.diffShape(shape, clipShape);
+    canvas.addShape(2, newShape);
+    canvas.addShape(1, newShape2);
+    canvas.addShape(0, clipShape);
     
     // contours (requires image to be loaded)
     //int numContours = int(parameters.cp5.getController("numContours").getValue());
@@ -104,9 +99,9 @@ public class Drawing{
     //      int minDim = (int)contours.getTopLeft().x;
     //      int maxDim = (int)contours.getTopLeft().x + (int)contours.getWidth();
           
-    //      for (float l=minDim-10; l<maxDim+10; l+=fillSpacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
+    //      for (float l=minDim; l<maxDim; l+=fillSpacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
     //        RPoint lineBegin = new RPoint(l,(int)contours.getTopLeft().y);
-    //        RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-10, l, (int)contours.getTopLeft().y + contours.getHeight()+10);
+    //        RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y, l, (int)contours.getTopLeft().y + contours.getHeight());
     //        fill.addChild(cuttingLine);
     //      }
           

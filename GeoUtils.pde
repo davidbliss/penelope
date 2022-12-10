@@ -34,7 +34,7 @@ public class GeoUtils {
           
           Boolean penDown = false;
           for(int i=0; i < shape.getPoints().length-1; i++) {
-            if( clipShape.contains(pathPoints[i]) == inner && clipShape.contains(pathPoints[i+1]) == inner) {
+            if( clipShape.contains(pathPoints[i]) == inner && clipShape.contains(pathPoints[i+1]) == inner && inner == true) {
               // both points should be included
               if (penDown == false){
                 points.add(pathPoints[i]);
@@ -45,7 +45,14 @@ public class GeoUtils {
               RShape line = RG.getLine(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
               RPoint[] intersections = line.getIntersections(clipShape);
               if (intersections == null) {
-                // ignore
+                if( clipShape.contains(pathPoints[i]) == inner && clipShape.contains(pathPoints[i+1]) == inner && inner == false ) {
+                  // both points should be included
+                  if (penDown == false){
+                    points.add(pathPoints[i]);
+                    penDown = true;
+                  }
+                  points.add(pathPoints[i+1]);
+                } 
               } else if (intersections.length==1){
                 if(clipShape.contains(pathPoints[i])==inner){
                   points.add(pathPoints[i]);
