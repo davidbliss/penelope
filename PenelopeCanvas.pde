@@ -113,6 +113,33 @@ public class PenelopeCanvas {
     layer.addChild(shape);
   }
   
+  // add am RShape to the canvas, masking exhisting content and clipping new content
+  public void addMaskedShape(int layerNum, RShape shape){
+    RShape layer = layers.get(layerNum);
+    
+    RShape layeredShape = new RShape();
+    
+    layeredShape = geoUtils.maskShapeFast(layer, shape);
+    layeredShape = geoUtils.clipShapeFast(layeredShape, boundaries);
+    
+    layers.set(layerNum, layeredShape);
+  }
+  
+  
+  
+  // add an ArrayList of points to the canvas without clipping them to margin
+  public void addPath(int layerNum, ArrayList<RPoint> points){
+    RPath path = new RPath(points.get(0).x, points.get(0).y);
+    
+    for (int p = 1; p < points.size(); p++){
+      path.addLineTo(points.get(p).x, points.get(p).y);
+    }
+    
+    RShape shape = new RShape();
+      shape.addPath(path);
+      if (path.getHandles() !=null && path.getHandles().length>0) layers.get(layerNum).addChild(shape);
+  }
+  
   // add an ArrayList of PVectors to the canvas, masking exhisting content and clipping new content
   public void addMaskedPath(int layerNum, ArrayList<PVector> points){
     RShape layer = layers.get(layerNum);
@@ -129,95 +156,9 @@ public class PenelopeCanvas {
     
     RShape layeredShape = new RShape();
     
-    layeredShape = maskShape(layeredShape, newShape);
-    layeredShape = clipShape(layeredShape, boundaries);
+    layeredShape = geoUtils.maskShapeFast(layeredShape, newShape);
+    layeredShape = geoUtils.clipShapeFast(layeredShape, boundaries);
     layer.addChild(layeredShape);
-  }
-  
-  // TODO: test this out test this with the previous content and the fill content, what are limitations?
-  // add am RShape to the canvas, masking exhisting content and clipping new content
-  public void addMaskedShape(int layerNum, RShape shape){
-    RShape layer = layers.get(layerNum);
-    
-    RShape layeredShape = new RShape();
-    
-    layeredShape = maskShape(layer, shape);
-    layeredShape = clipShape(layeredShape, boundaries);
-    
-    layers.set(layerNum, layeredShape);
-  }
-    
-  // TODO: Test this test this with the previous content and the fill content, what are limitations?
-  // add a new shape to existing shape, and knock out any lines in the existing shape that fall inside the new shape
-  public RShape maskShape(RShape originalShape, RShape newShape){
-    if(originalShape.countChildren()==0){
-      originalShape.addChild(newShape);
-    } else {
-      originalShape.addChild(RG.diff(originalShape, newShape));
-    }
-    return originalShape;
-  }
-  
-  // TODO: test this with the previous content and the fill content, what are limitations?
-  // clip the shape using the clipShape
-  // uses built in intersection to clip complex shapes
-  public RShape clipShape(RShape shape, RShape clipShape){
-    return RG.intersection(shape, clipShape);
-  }
-  
-  // add an ArrayList of points to the canvas without clipping them to margin
-  public void addPath(int layerNum, ArrayList<RPoint> points){
-    RPath path = new RPath(points.get(0).x, points.get(0).y);
-    
-    for (int p = 1; p < points.size(); p++){
-      path.addLineTo(points.get(p).x, points.get(p).y);
-    }
-    
-    RShape shape = new RShape();
-      shape.addPath(path);
-      if (path.getHandles() !=null && path.getHandles().length>0) layers.get(layerNum).addChild(shape);
-  }
-  
-  // add an ArrayList of points to the canvas after clipping it with the margin
-  // used to draw open lines that are clipped to the margin of the page
-  // this is an option to useing Geomerative, which closes shapes to run intersection with margin. and is also quite a bit slower
-  public ArrayList<ArrayList<RPoint>> clipPath(ArrayList<RPoint> points){
-    //println("addClippedPath, from points", layerNum, points.size());
-    
-    ArrayList<ArrayList<RPoint>> output = new ArrayList<ArrayList<RPoint>>();
-    ArrayList<RPoint> path = new ArrayList<RPoint>();
-    
-    for (int p = 1; p < points.size(); p++){
-      // See if crop is needed and to which side
-      int offScreenPoints = offscreenPoints(points.get(p-1), points.get(p));
-      
-      RPath segment = new RPath(new RCommand(points.get(p-1).x, points.get(p-1).y, points.get(p).x, points.get(p).y));
-      
-      RPath clippedSegment = clipPath(segment);
-       
-      if(clippedSegment!=null){
-        if (path.size()==0) path.add(clippedSegment.getHandles()[0]);
-        path.add(clippedSegment.getHandles()[1]);
-        
-        if (offScreenPoints == 2 || offScreenPoints == 3 ){
-          if (path.size()>1) output.add(path);
-          path = new ArrayList<RPoint>();
-          processRemainingPoints(points, p);
-          break;
-        }
-      } else {
-        // null clippedSegment means that it was entirely out of bounds
-         
-        if (path.size()>1) output.add(path);
-        path = new ArrayList<RPoint>();
-        
-        processRemainingPoints(points, p);
-        break;
-      }
-    }
-    if (path.size()>1) output.add(path);
-    
-    return output;
   }
   
   // add an ArrayList of points to the canvas after clipping it to the margin
@@ -266,7 +207,47 @@ public class PenelopeCanvas {
       shape.addPath(path);
       if (path !=null && path.getHandles().length>0) layers.get(layerNum).addChild(shape);
   }
-
+  
+  // add an ArrayList of points to the canvas after clipping it with the margin
+  // used to draw open lines that are clipped to the margin of the page
+  // this is an option to useing Geomerative, which closes shapes to run intersection with margin. and is also quite a bit slower
+  public ArrayList<ArrayList<RPoint>> clipPath(ArrayList<RPoint> points){
+    ArrayList<ArrayList<RPoint>> output = new ArrayList<ArrayList<RPoint>>();
+    ArrayList<RPoint> path = new ArrayList<RPoint>();
+    
+    for (int p = 1; p < points.size(); p++){
+      // See if crop is needed and to which side
+      int offScreenPoints = offscreenPoints(points.get(p-1), points.get(p));
+      
+      RPath segment = new RPath(new RCommand(points.get(p-1).x, points.get(p-1).y, points.get(p).x, points.get(p).y));
+      
+      RPath clippedSegment = clipPath(segment);
+       
+      if(clippedSegment!=null){
+        if (path.size()==0) path.add(clippedSegment.getHandles()[0]);
+        path.add(clippedSegment.getHandles()[1]);
+        
+        if (offScreenPoints == 2 || offScreenPoints == 3 ){
+          if (path.size()>1) output.add(path);
+          path = new ArrayList<RPoint>();
+          processRemainingPoints(points, p);
+          break;
+        }
+      } else {
+        // null clippedSegment means that it was entirely out of bounds
+         
+        if (path.size()>1) output.add(path);
+        path = new ArrayList<RPoint>();
+        
+        processRemainingPoints(points, p);
+        break;
+      }
+    }
+    if (path.size()>1) output.add(path);
+    
+    return output;
+  }
+  
   // used in clipPath
   private void processRemainingPoints(ArrayList<RPoint> points, int p){
     // we already tested the line between 0 and 1, no reason to continue if there are not more than 2 points in the list

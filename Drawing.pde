@@ -55,67 +55,69 @@ public class Drawing{
     
     
     
-    ////This uses the newer, clipShape call: created as test case
-    //RShape circles = generateCircles(int(canvas.width/2), int(canvas.height/2), 200, 5);
-    //RShape shape = new RShape();
-    //shape.addChild(circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400));
-    //shape.addChild(circles.createCircle(int(canvas.width/2)+20, int(canvas.height/2), 400));
-    //shape.addChild(circles.createCircle(int(canvas.width/2)+100, int(canvas.height/2), 100));
-    //shape.addChild(circles.createCircle(int(canvas.width/2)-400, int(canvas.height/2), 100));
-    //shape.addChild(RG.getLine(0,0,canvas.width, canvas.height));
-    //shape.addChild(RG.getLine(canvas.width,0,canvas.width/2+100, canvas.height/2));
-    //RShape clipShape = circles.createCircle(int(canvas.width/2+100), int(canvas.height/2), 400);
-    //RShape newShape = geoUtils.clipShape(shape, clipShape);
-    //canvas.addShape(1, newShape);
-    //canvas.addShape(1, clipShape);
+    //This uses the newer, clipShape call: created as test case
+    RShape circles = generateCircles(int(canvas.width/2), int(canvas.height/2), 200, 5);
+    RShape shape = new RShape();
+    shape.addChild(circles.createCircle(int(canvas.width/2), int(canvas.height/2), 400));
+    shape.addChild(circles.createCircle(int(canvas.width/2)+20, int(canvas.height/2), 400));
+    shape.addChild(circles.createCircle(int(canvas.width/2)+100, int(canvas.height/2), 100));
+    shape.addChild(circles.createCircle(int(canvas.width/2)-400, int(canvas.height/2), 100));
+    shape.addChild(RG.getLine(0,0,canvas.width, canvas.height));
+    shape.addChild(RG.getLine(canvas.width,0,canvas.width/2+100, canvas.height/2));
+    RShape clipShape = circles.createCircle(int(canvas.width/2+100), int(canvas.height/2), 400);
+    RShape newShape = geoUtils.clipShape(shape, clipShape, false);
+    canvas.addShape(1, newShape);
+    //canvas.addShape(0, clipShape);
+    
+    //canvas.addShape(2, RG.getEllipse(int(canvas.width/2+100), int(canvas.height/2)-500, 400, 400));
+    //canvas.addShape(2, RG.getEllipse(int(canvas.width/2), int(canvas.height/2)-500, 400, 400));
+    //canvas.addShape(2, geoUtils.clipShape(RG.getEllipse(int(canvas.width/2+100), int(canvas.height/2), 400, 400), RG.getEllipse(int(canvas.width/2), int(canvas.height/2), 400, 400)));
+    //canvas.addShape(2, geoUtils.diffShape(RG.getEllipse(int(canvas.width/2+100), int(canvas.height/2)+500, 400, 400), RG.getEllipse(int(canvas.width/2), int(canvas.height/2)+500, 400, 400)));
     
     // contours (requires image to be loaded)
-    
-    // This uses the newer, clipShape call
-    int numContours = int(parameters.cp5.getController("numContours").getValue());
-    if(levels != null){
-      for (int i=0; i<numContours; i++){
-        println("drawing level", i);
+    //int numContours = int(parameters.cp5.getController("numContours").getValue());
+    //if(levels != null){
+    //  for (int i=0; i<numContours; i++){
+    //    println("drawing level", i);
         
-        RShape contours = levels.get(i).getContours();
+    //    RShape contours = levels.get(i).getContours();
         
-        float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
-        float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
+    //    float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
+    //    float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
         
-        if (i < numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
+    //    if (i < numContours-1) contours = RG.diff(contours, levels.get(i+1).getContours());
         
-        float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
-        float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
-        float scale = scaleY;
-        if (scaleX < scaleY) scale = scaleX;
+    //    float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
+    //    float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
+    //    float scale = scaleY;
+    //    if (scaleX < scaleY) scale = scaleX;
         
-        int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
-        int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
-        contours.scale(scale);
-        contours.translate(offsetX, offsetY);
+    //    int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
+    //    int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
+    //    contours.scale(scale);
+    //    contours.translate(offsetX, offsetY);
         
-        if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
-          float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
+    //    if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
+    //      float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
           
-          //
-          RShape fill = new RShape();
-          int minDim = (int)contours.getTopLeft().x;
-          int maxDim = (int)contours.getTopLeft().x + (int)contours.getWidth();
+    //      RShape fill = new RShape();
+    //      int minDim = (int)contours.getTopLeft().x;
+    //      int maxDim = (int)contours.getTopLeft().x + (int)contours.getWidth();
           
-          for (float l=minDim-10; l<maxDim+10; l+=fillSpacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
-            RPoint lineBegin = new RPoint(l,(int)contours.getTopLeft().y);
-            RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-10, l, (int)contours.getTopLeft().y + contours.getHeight()+10);
-            fill.addChild(cuttingLine);
-          }
+    //      for (float l=minDim-10; l<maxDim+10; l+=fillSpacing) {  // NOTE: get height is not reliable for all shapes adding some buffer
+    //        RPoint lineBegin = new RPoint(l,(int)contours.getTopLeft().y);
+    //        RShape cuttingLine = RG.getLine(lineBegin.x, lineBegin.y-10, l, (int)contours.getTopLeft().y + contours.getHeight()+10);
+    //        fill.addChild(cuttingLine);
+    //      }
           
-          RShape clippedFill = geoUtils.clipShape(fill, contours);
-          canvas.addShape(canvasLayer, clippedFill);
-        }
+    //      RShape clippedFill = geoUtils.clipShape(fill, contours);
+    //      canvas.addShape(canvasLayer, clippedFill);
+    //    }
         
-        if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
-      }
-      if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
-    }
+    //    if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
+    //  }
+    //  if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
+    //}
        
     println("drawing done");
   }

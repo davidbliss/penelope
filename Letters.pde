@@ -26,7 +26,6 @@ public class Letters {
         x += getWidth(letter) + r + strokes*distance/2;
       }  
     }
-    
     return shape;
   }
   

@@ -1,23 +1,32 @@
 //TODO: some functions in this class(like filterJaggedLines) handle nested shapes, others (like thickenLines) do not; need to come to terms with that to improve reusability
 
 public class GeoUtils {
-  // TODO: see about implementing to support inverse of clipShape
+  RShape diffShape(RShape shape, RShape diffShape){
+    return clipShape(shape, diffShape, false);
+  }
+  
+  RShape clipShape(RShape shape, RShape clipShape){
+    return clipShape(shape, clipShape, true);
+  }
   
   // new way to clip a shape based on other shape, more flexible than previous fill process
-  RShape clipShape(RShape shape, RShape clipShape){
+  RShape clipShape(RShape shape, RShape clipShape, Boolean inner){
     RShape newShape = new RShape();
     if(shape.countChildren() > 0){
       for(RShape child: shape.children){
-        newShape.addChild( clipShape(child, clipShape) );
+        newShape.addChild( clipShape(child, clipShape, inner) );
       }
     }
     if(shape.countPaths() > 0){
       for(RPath path: shape.paths){
-        if(clipShape.contains(path) == true) {
-          // if path is entirely inside, add it
+        if(clipShape.contains(path) == true && inner == true) {
+          // path is entirely inside, add it
+          newShape.addChild(new RShape(path));
+        } else if(clipShape.contains(path) == false && inner == false && clipShape.getIntersections(new RShape(path)) == null) {
+          // path is entirely outside, add it does not intersect
           newShape.addChild(new RShape(path));
         } else if(clipShape.getIntersections(new RShape(path)) == null){
-          // if path is entirely outside, ignore it
+          // no further consideration needed
         } else {
           ArrayList<ArrayList<RPoint>> pointsList = new ArrayList<ArrayList<RPoint>>();
           ArrayList<RPoint> points = new ArrayList<RPoint>();
@@ -25,8 +34,8 @@ public class GeoUtils {
           
           Boolean penDown = false;
           for(int i=0; i < shape.getPoints().length-1; i++) {
-            if( clipShape.contains(pathPoints[i]) && clipShape.contains(pathPoints[i+1])) {
-              // both points are inside
+            if( clipShape.contains(pathPoints[i]) == inner && clipShape.contains(pathPoints[i+1]) == inner) {
+              // both points should be included
               if (penDown == false){
                 points.add(pathPoints[i]);
                 penDown = true;
@@ -38,9 +47,12 @@ public class GeoUtils {
               if (intersections == null) {
                 // ignore
               } else if (intersections.length==1){
-                if(clipShape.contains(pathPoints[i])){
+                if(clipShape.contains(pathPoints[i])==inner){
                   points.add(pathPoints[i]);
                   points.add(intersections[0]);
+                  
+                  pointsList.add(points);
+                  points = new ArrayList<RPoint>();
                   penDown = false;
                 } else {
                   points.add(intersections[0]);
@@ -52,34 +64,34 @@ public class GeoUtils {
                 intersections = geoUtils.sortPoints(intersections, pathPoints[i], canvas.width*canvas.height);
                 
                 // handle point to first intersection
-                if (lineIn(pathPoints[i], intersections[0], clipShape)==true){
+                if (lineIn(pathPoints[i], intersections[0], clipShape) == inner){
                   points.add(pathPoints[i]);
                   points.add(intersections[0]);
-                } else {
                   pointsList.add(points);
                   points = new ArrayList<RPoint>();
+                  penDown = false;
                 }
                 
                 for(int j=0; j < intersections.length-1; j++) {
-                  if (lineIn(intersections[j], intersections[j+1], clipShape)==true){
+                  if (lineIn(intersections[j], intersections[j+1], clipShape) == inner){
                     points.add(intersections[j]);
                     points.add(intersections[j+1]);
+                    penDown = true;
                   } else {
                     pointsList.add(points);
                     points = new ArrayList<RPoint>();
+                    penDown = false;
                   }
                 }
                 
-                if (lineIn(intersections[intersections.length-1], pathPoints[i+1], clipShape)==true){
+                if (lineIn(intersections[intersections.length-1], pathPoints[i+1], clipShape) == inner){
                   points.add(intersections[intersections.length-1]);
                   points.add(pathPoints[i+1]);
+                  penDown = true;
                 }
               } 
-              
             }
           }
-          
-          // TODO: FIRST handle final point to first point (if it is closed?)
           
           pointsList.add(points);
           newShape.addChild(geoUtils.pointsToShape(pointsList));
@@ -87,6 +99,23 @@ public class GeoUtils {
       }
     }
     return newShape;
+  }
+  
+  // add a maskedShape to shape, removing out any lines in the maskedShape that fall inside the shape
+  // uses Geormerative boolean operations which generate closed shapes
+  public RShape maskShapeFast(RShape shape, RShape maskedShape){
+    if(shape.countChildren()==0 && shape.countPaths()==0){
+      shape.addChild(maskedShape);
+    } else {
+      shape.addChild(RG.diff(shape, maskedShape));
+    }
+    return shape;
+  }
+  
+  // clip the shape using the clipShape
+  // uses Geormerative boolean operations which generate closed shapes
+  public RShape clipShapeFast(RShape shape, RShape clipShape){
+    return RG.intersection(shape, clipShape);
   }
   
   // determine if a line is inside a clipShape based on its midpoint
