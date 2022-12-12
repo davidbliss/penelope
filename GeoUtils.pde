@@ -23,46 +23,54 @@ public class GeoUtils {
           // path is entirely inside, add it
           newShape.addChild(new RShape(path));
         } else if(clipShape.contains(path) == false && inner == false && clipShape.getIntersections(new RShape(path)) == null) {
-          // path is entirely outside, add it does not intersect
+          // path is entirely outside, add it does not intersect, we are keeping outer, so add it
           newShape.addChild(new RShape(path));
         } else if(clipShape.getIntersections(new RShape(path)) == null){
-          // no further consideration needed
+          // path is entirely outside, add it does not intersect, we are keeping inner, so ignore it
         } else {
+          // go through the path, looking at each point and the next as you go
+          
           ArrayList<ArrayList<RPoint>> pointsList = new ArrayList<ArrayList<RPoint>>();
           ArrayList<RPoint> points = new ArrayList<RPoint>();
-          RPoint[] pathPoints = shape.getPoints();
           
           Boolean penDown = false;
+          RPoint[] pathPoints = shape.getPoints();
           for(int i=0; i < shape.getPoints().length-1; i++) {
             if( clipShape.contains(pathPoints[i]) == inner && clipShape.contains(pathPoints[i+1]) == inner && inner == true) {
               // both points should be included
               if (penDown == false){
                 points.add(pathPoints[i]);
-                penDown = true;
               }
               points.add(pathPoints[i+1]);
+              penDown = true;
             } else {
+              // make a line, see if it intersects and add the correct bits
               RShape line = RG.getLine(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
               RPoint[] intersections = line.getIntersections(clipShape);
+              
               if (intersections == null) {
                 if( clipShape.contains(pathPoints[i]) == inner && clipShape.contains(pathPoints[i+1]) == inner && inner == false ) {
                   // both points should be included
                   if (penDown == false){
                     points.add(pathPoints[i]);
-                    penDown = true;
                   }
                   points.add(pathPoints[i+1]);
+                  penDown = true;
                 } 
               } else if (intersections.length==1){
                 if(clipShape.contains(pathPoints[i])==inner){
-                  points.add(pathPoints[i]);
+                  if (penDown == false){
+                    points.add(pathPoints[i]);
+                  }
                   points.add(intersections[0]);
                   
                   pointsList.add(points);
                   points = new ArrayList<RPoint>();
                   penDown = false;
                 } else {
-                  points.add(intersections[0]);
+                  if (penDown == false){
+                    points.add(intersections[0]);
+                  }
                   points.add(pathPoints[i+1]);
                   penDown = true;
                 }
@@ -70,10 +78,13 @@ public class GeoUtils {
                 // intersections need to be sorted
                 intersections = geoUtils.sortPoints(intersections, pathPoints[i], canvas.width*canvas.height);
                 
-                // handle point to first intersection
+                // beggining point to first intersection
                 if (lineIn(pathPoints[i], intersections[0], clipShape) == inner){
-                  points.add(pathPoints[i]);
+                  if (penDown == false){
+                    points.add(pathPoints[i]);
+                  }
                   points.add(intersections[0]);
+                  
                   pointsList.add(points);
                   points = new ArrayList<RPoint>();
                   penDown = false;
@@ -81,7 +92,9 @@ public class GeoUtils {
                 
                 for(int j=0; j < intersections.length-1; j++) {
                   if (lineIn(intersections[j], intersections[j+1], clipShape) == inner){
-                    points.add(intersections[j]);
+                    if (penDown == false){
+                      points.add(intersections[j]);
+                    }
                     points.add(intersections[j+1]);
                     penDown = true;
                   } else {
@@ -91,10 +104,17 @@ public class GeoUtils {
                   }
                 }
                 
+                // last intersection to ending point
                 if (lineIn(intersections[intersections.length-1], pathPoints[i+1], clipShape) == inner){
-                  points.add(intersections[intersections.length-1]);
+                  if (penDown == false){
+                    points.add(intersections[intersections.length-1]);
+                  }
                   points.add(pathPoints[i+1]);
                   penDown = true;
+                } else {
+                  pointsList.add(points);
+                  points = new ArrayList<RPoint>();
+                  penDown = false;
                 }
               } 
             }
