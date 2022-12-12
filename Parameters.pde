@@ -10,6 +10,8 @@ public class Parameters {
     manager= new ParameterManager(cp5);
     
     customParameters(new PVector(810, 10));
+    
+    
   }
   void customParameters(PVector pos){
     int xBase = int(pos.x);
@@ -49,7 +51,7 @@ public class Parameters {
       .setPosition(xPos, yPos)
       .setWidth(100)
       .setRange(0,1)
-      .setValue(.5)
+      .setValue(.21)
      ;
     
     yPos+=yOffset;
@@ -83,6 +85,26 @@ public class Parameters {
      .setValue(false)
      ;
 
-    xPos+=xOffset;
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addButton("placeCenter")
+      .setLabel("place center")
+      .setPosition(xPos, yPos)
+      .setSize(100,20)
+      ;
+  }
+}
+
+Boolean waitingForCenter=false;
+public void placeCenter(ControlEvent e){
+  waitingForCenter = true;
+}
+void mousePressed() {
+  if (waitingForCenter) {
+    println("center clicked");
+    
+    centers.add(new RPoint(map(mouseX, 0, onscreenCanvasWidth, 0, canvas.width), map(mouseY, 0, onscreenCanvasHeight, 0, canvas.height)));
+    waitingForCenter = false;
   }
 }

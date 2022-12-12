@@ -81,3 +81,10 @@ void updateDimensions(){
   onscreenCanvasWidth = (int) (canvas.width * scale);
   onscreenCanvasHeight = (int) (canvas.height * scale);
 }
+
+public void controlEvent(ControlEvent theEvent){
+  // triggered by controls and parameters
+  if(canvas != null && theEvent.getName() != "loadFromFile" && theEvent.getName() != "saveSnapshot" && theEvent.getName() != "placeCenter"){
+    drawRequested = true;
+  }
+}

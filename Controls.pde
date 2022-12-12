@@ -141,15 +141,8 @@ void randomizeParameters(){
 void regenerate(){  
 }
 
-public void controlEvent(ControlEvent theEvent){
-  // controlEvent is called before the program's setup is complete.
-  // calling drawOnce before program is complete generates error
-  
-  if(canvas != null && theEvent.getName() != "loadFromFile" && theEvent.getName() != "saveSnapshot"){
-    if(loadedImage!=null) drawing.processImage();
-    drawRequested = true;
-  }
-}
+
+
 
 void loadFromFile(){
   selectInput("Select a file to process:", "loadImageFromDisk");
@@ -162,7 +155,6 @@ void loadImageFromDisk(File selection){
     String path = selection.getAbsolutePath();
     println("loading image:", path);
     loadedImage = loadImage(path);
-    drawing.processImage();
     drawRequested = true;
   }
 }
