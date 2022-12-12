@@ -46,10 +46,10 @@ public class Drawing{
         
         if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
           float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
-          println(fillSpacing);
+          
           RShape fill;
           if(centers.size()==0){
-            fill = generateCircles(canvas.width/2, canvas.height/2, canvas.height, fillSpacing*4);
+            fill = generateCircles(canvas.width/2, canvas.height/2, canvas.height, fillSpacing);
           } else {
             fill = new RShape();
             for(int j=0; j<centers.size(); j++){
