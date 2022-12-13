@@ -80,11 +80,10 @@ public class PenelopeCanvas {
     println("PenelopeCanvas draw finished.");
   }
   
-  public void saveImage(String output){
+  public void saveImage(){
     String name = "output/"+month()+"."+day()+"."+year()+"_"+hour()+"-"+minute()+"-"+second();
     
-    String[] lines = new String[1];
-    lines[0] = output;
+    String[] lines = split( parameters.manager.toString(), "/n");
     saveStrings(name + ".txt", lines);
     
     // if you don't draw again, graphics is blank?

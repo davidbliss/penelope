@@ -1,4 +1,4 @@
-// currently supports sliders and toggles
+// currently supports sliders, ranges, and toggles
 
 public class ParameterManager {
   ControlP5 cp5;
@@ -17,6 +17,15 @@ public class ParameterManager {
     for(Toggle toggle:toggles) {
       toggle.setValue(int(random(0,2)));
     }
+    
+    List<Range> ranges = cp5.getAll(Range.class);
+    for(Range range:ranges) {
+      float v1 = random(range.getMin(),range.getMax());
+      float v2 = random(range.getMin(),range.getMax());
+      
+      range.setLowValue(Math.min(v1, v2));
+      range.setHighValue(Math.max(v1, v2));
+    }
   }
   
   String toString(){
@@ -31,11 +40,11 @@ public class ParameterManager {
       output += "toggle, "+toggle.getName()+": " +toggle.getValue() +"\n";
     }
     
+    List<Range> ranges = cp5.getAll(Range.class);
+    for(Range range:ranges) {
+      output += "range, "+range.getLowValue()+", "+range.getHighValue();
+    }
+    
     return output;
-  }
-  
-  void saveValues(String path){
-    String[] valuesList = split( toString(), "/n");
-    saveStrings(path+".txt", valuesList);
   }
 }

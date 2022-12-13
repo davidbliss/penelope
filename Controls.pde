@@ -129,8 +129,7 @@ public class Controls {
 
 // FUNCTIONS FOR CONTROLS
 public void saveSnapshot(){
-  String output = "";
-  canvas.saveImage(output);
+  canvas.saveImage();
 }
 
 void randomizeParameters(){
