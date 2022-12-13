@@ -45,8 +45,7 @@ public class Drawing{
         contours.translate(offsetX, offsetY);
         
         if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
-          float fillSpacing = (1+(levels.get(i).getThreshold()/10)) * parameters.cp5.getController("fillSpacing").getValue();
-          
+          float fillSpacing = (1+i*((1.0/(numContours-1))*10))* parameters.cp5.getController("fillSpacing").getValue(); 
           RShape fill;
           if(centers.size()==0){
             fill = generateCircles(canvas.width/2, canvas.height/2, canvas.height, fillSpacing);
@@ -62,7 +61,13 @@ public class Drawing{
         
         if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
       }
-      if(controls.cp5.getController("showImage").getValue()==1.0) image(levels.get(0).getAdjustedImage(), 0, 0);
+      
+      if(controls.cp5.getController("showImage").getValue()==1.0) {
+        image(levels.get(0).getAdjustedImage(), 0, 0);
+        //for (int i=0; i<numContours; i++){
+        //  image(levels.get(i).getThresholdImage(), 0+100*(i+1),0);
+        //}
+      }
     }
   }
   
@@ -70,9 +75,12 @@ public class Drawing{
     // create contours
     if(loadedImage!=null){
       levels = new ArrayList<ContourLevel>();
-      for (int i=0; i < int(parameters.cp5.getController("numContours").getValue()); i++){
-        int threshold = int(float(i)/int(parameters.cp5.getController("numContours").getValue())*100) - 1; 
-        ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), threshold);
+      int numContours = int(parameters.cp5.getController("numContours").getValue());
+      for (int i=0; i < numContours; i++){
+        float threshold = i*((1.0/(numContours-1))*100); 
+        threshold = map(threshold, 0, 100, parameters.cp5.getController("contourBrightnessRange").getArrayValue()[0], parameters.cp5.getController("contourBrightnessRange").getArrayValue()[1]);
+        threshold = map(threshold, 0, 1, -1, 255);
+        ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), int(threshold));
         
         float[] values = parameters.cp5.getController("contourSizeRange").getArrayValue();
         level.removeContoursSmallerThan(values[0]);

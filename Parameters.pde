@@ -57,7 +57,19 @@ public class Parameters {
     yPos+=yOffset;
     xPos=xBase;
     
-    // this should be relative to the largest contour
+    // this is relative to the largest contour
+    cp5.addRange("contourBrightnessRange")
+      .setLabel("contour brightness range")
+      .setPosition(xPos, yPos)
+      .setWidth(400)
+      .setRange(0,1)
+      .setRangeValues(0,.5)
+     ;
+     
+    yPos+=yOffset;
+    xPos=xBase;
+    
+    // this is relative to the largest contour
     cp5.addRange("contourSizeRange")
       .setLabel("contour size range")
       .setPosition(xPos, yPos)
