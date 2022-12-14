@@ -43,6 +43,20 @@ class ContourLevel {
     offsetY = (canvas.height-src.height*multiplier)/2.0;
   }
   
+  void simplifyCountours(float _factorLimit ){
+    // the higher the _factorLimit, the more simplified
+    // .75 or 1 is good for contour simplification
+    // 2-2.5 is good for fills?
+    
+    for (int i = 0; i<contours.size(); i++){
+      Contour contour = contours.get(i);
+      double factor = contour.getPolygonApproximationFactor();
+      if (factor > _factorLimit) factor = _factorLimit; 
+      contour.setPolygonApproximationFactor(factor);
+      contours.set(i, contour.getPolygonApproximation());
+    }
+  }  
+  
   RShape getContour(Contour contour){
     RShape shape = new RShape();
     if (contour.getPoints().size() > 1) {
