@@ -64,9 +64,18 @@ public class Drawing{
       
       if(controls.cp5.getController("showImage").getValue()==1.0) {
         image(levels.get(0).getAdjustedImage(), 0, 0);
-        //for (int i=0; i<numContours; i++){
-        //  image(levels.get(i).getThresholdImage(), 0+100*(i+1),0);
-        //}
+        for (int i=0; i<numContours; i++){
+          PGraphics sourceImage = createGraphics(levels.get(i).getThresholdImage().width,levels.get(i).getThresholdImage().height);
+          sourceImage.beginDraw();
+          sourceImage.noStroke();
+          sourceImage.fill(i*((1.0/(numContours-1))*255));
+          sourceImage.rect(0,0,sourceImage.width,sourceImage.height);
+          sourceImage.endDraw();
+          
+          sourceImage.mask(levels.get(i).getThresholdImage());
+          
+          image(sourceImage, sourceImage.width,0);
+        }
       }
     }
   }
