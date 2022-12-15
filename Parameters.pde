@@ -78,6 +78,19 @@ public class Parameters {
       .setRangeValues(.001,1)
      ;
      
+    
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addSlider("contourSmoothingFactor")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("smoothing factor")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,10)
+      .setValue(2)
+     ; 
+     
     yPos+=yOffset;
     xPos=xBase;
     
@@ -85,7 +98,7 @@ public class Parameters {
      .setLabel("fill")
      .setPosition(xPos, yPos)
      .setSize(50,10)
-     .setValue(true)
+     .setValue(false)
      ;
 
     xPos+=xOffset;
@@ -96,6 +109,15 @@ public class Parameters {
      .setSize(50,10)
      .setValue(false)
      ;
+     
+    xPos+=xOffset;
+    
+    cp5.addToggle("showKeyLines")
+     .setLabel("keyLines")
+     .setPosition(xPos, yPos)
+     .setSize(50,10)
+     .setValue(true)
+     ;
 
     xPos=xBase;
     yPos+=yOffset;
@@ -105,6 +127,78 @@ public class Parameters {
       .setPosition(xPos, yPos)
       .setSize(100,20)
       ;
+      
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addSlider("matchDistance")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("keep contours within this distance of others")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(1,60)
+      .setValue(5)
+     ;
+    
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addSlider("removeDistance")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("remove duplicate points within")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(1,60)
+      .setValue(5)
+     ;
+     
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addSlider("jaggedDistance")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("max length of jagged lines")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(1,80)
+      .setValue(20)
+     ;
+     
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addSlider("minLineLength")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("minimum length of lines drawn")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(1,80)
+      .setValue(10)
+     ;
+    
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addSlider("minArea")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("minimum area of lines drawn")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(1,1500)
+      .setValue(100)
+     ;
+     
+    xPos=xBase;
+    yPos+=yOffset;
+    
+    cp5.addSlider("mergeDistance")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("max distance to merge lines together")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(1,20)
+      .setValue(7.5)
+     ;
   }
 }
 

@@ -83,8 +83,8 @@ public class Controls {
       .setLabel("page width (in)")
       .setPosition(xPos, yPos)
       .setWidth(100)
-      .setRange(8,24)
-      .setValue(18)
+      .setRange(5,24)
+      .setValue(5)
       ;
     xPos+=xOffset+50;
 
@@ -93,8 +93,8 @@ public class Controls {
       .setLabel("page height (in)")
       .setPosition(xPos, yPos)
       .setWidth(100)
-      .setRange(8,24)
-      .setValue(24)
+      .setRange(5,24)
+      .setValue(8)
       ;
     xPos+=xOffset+50;
     
