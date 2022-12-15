@@ -64,8 +64,8 @@ public class Drawing{
         // fill contours (except the lightest one)
         if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
         
-          float fillSpacing = 1 + i * (1.0/(numContours-1)) * 3 * parameters.cp5.getController("fillSpacing").getValue(); 
-          println("about to fill",fillSpacing, canvas.height);
+          float fillSpacing = map(i * (1.0/(numContours-1)), 0.0, 1.0, parameters.cp5.getController("minFillSpacing").getValue(),parameters.cp5.getController("maxFillSpacing").getValue()); 
+          println("about to fill",fillSpacing);
           RShape fill;
           if(centers.size()==0){
             fill = generateCircles(canvas.width/2, canvas.height/2, canvas.height, fillSpacing);

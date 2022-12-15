@@ -21,13 +21,24 @@ public class Parameters {
     int yOffset = 25;
     int xOffset = 130;
 
-    cp5.addSlider("fillSpacing")
+    cp5.addSlider("minFillSpacing")
       .setTriggerEvent(Slider.RELEASE)
-      .setLabel("fill spacing")
+      .setLabel("min fill spacing")
       .setPosition(xPos, yPos)
       .setWidth(100)
       .setRange(1,10)
       .setValue(1)
+     ;
+    
+    xPos=xBase+xOffset;
+    
+    cp5.addSlider("maxFillSpacing")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("max fill spacing")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(1,20)
+      .setValue(10)
      ;
     
     yPos+=yOffset;
