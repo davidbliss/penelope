@@ -84,7 +84,7 @@ public class Controls {
       .setPosition(xPos, yPos)
       .setWidth(100)
       .setRange(5,24)
-      .setValue(5)
+      .setValue(8)
       ;
     xPos+=xOffset;
 
@@ -94,7 +94,7 @@ public class Controls {
       .setPosition(xPos, yPos)
       .setWidth(100)
       .setRange(5,24)
-      .setValue(8)
+      .setValue(5)
       ;
     xPos+=xOffset;
     

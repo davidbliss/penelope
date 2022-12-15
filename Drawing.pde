@@ -22,30 +22,28 @@ public class Drawing{
     processImage();
     if(levels != null){
       int numContours = int(parameters.cp5.getController("numContours").getValue());
-      
-      
+
       RShape allContours = new RShape();
+      
+      float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
+      float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
+      
+      float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
+      float scaleY = (canvas.height-canvas.margin * 2) / imageHeight;
+      float scale = scaleY;
+      if (scaleX < scaleY) scale = scaleX;
+      
+      int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
+      int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
     
       for (int i=0; i<numContours; i++){
         println("drawing level", i);
         
         RShape contours = levels.get(i).getContours();
         
-        float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
-        float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
-        
-        float scaleX = (canvas.width-canvas.margin * 2) / imageWidth;
-        float scaleY = (canvas.height-canvas.margin * 2) / imageWidth;
-        float scale = scaleY;
-        if (scaleX < scaleY) scale = scaleX;
-        
-        int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
-        int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
-        
         RShape diffedContours = null;
         if (i < numContours-1) {
           // diffing before scaling is much quicker. TODO: what about filling before scaling?
-          println("about to diff");
           diffedContours = RG.diff(contours, levels.get(i+1).getContours());
           diffedContours.scale(scale);
           diffedContours.translate(offsetX, offsetY);
@@ -55,7 +53,6 @@ public class Drawing{
         contours.translate(offsetX, offsetY);
         
         // add contours to allCountours before diffing them
-        println("about to add to all contours");
         allContours.addChild(new RShape(contours));
         
         // show contours
@@ -65,7 +62,6 @@ public class Drawing{
         if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
         
           float fillSpacing = map(i * (1.0/(numContours-1)), 0.0, 1.0, parameters.cp5.getController("minFillSpacing").getValue(),parameters.cp5.getController("maxFillSpacing").getValue()); 
-          println("about to fill",fillSpacing);
           RShape fill;
           if(centers.size()==0){
             fill = generateCircles(canvas.width/2, canvas.height/2, canvas.height, fillSpacing);
@@ -121,6 +117,12 @@ public class Drawing{
         }
       }
     }
+    
+    RShape message = RG.getText("Hello world!", "Phosphate-Solid.ttf", 54, LEFT);
+    //RShape message = RG.getText("Hello world!", "FreeSans.ttf", 54, LEFT);
+    message.polygonize();
+    message.translate(10,200);
+    canvas.addShape(2,message);
   }
   
   void processImage(){
