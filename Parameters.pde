@@ -30,7 +30,7 @@ public class Parameters {
       .setValue(1)
      ;
     
-    xPos=xBase+xOffset;
+    xPos+=2*xOffset;
     
     cp5.addSlider("maxFillSpacing")
       .setTriggerEvent(Slider.RELEASE)
@@ -68,27 +68,48 @@ public class Parameters {
     yPos+=yOffset;
     xPos=xBase;
     
-    // this is relative to the largest contour
-    cp5.addRange("contourBrightnessRange")
-      .setLabel("contour brightness range")
+    cp5.addSlider("minContourBrightness")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("smin contour brightness")
       .setPosition(xPos, yPos)
-      .setWidth(400)
+      .setWidth(100)
       .setRange(0,1)
-      .setRangeValues(0,.5)
+      .setValue(0)
+     ;
+    
+    xPos+=2*xOffset;
+    
+    cp5.addSlider("maxContourBrightness")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("max contour brightness")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,1)
+      .setValue(.5)
      ;
      
     yPos+=yOffset;
     xPos=xBase;
     
-    // this is relative to the largest contour
-    cp5.addRange("contourSizeRange")
-      .setLabel("contour size range")
+    cp5.addSlider("minContourArea")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("min contour area")
       .setPosition(xPos, yPos)
-      .setWidth(400)
+      .setWidth(100)
       .setRange(.001,1)
-      .setRangeValues(.001,1)
+      .setValue(.001)
      ;
-     
+    
+    xPos+=2*xOffset;
+    
+    cp5.addSlider("maxContourArea")
+      .setTriggerEvent(Slider.RELEASE)
+      .setLabel("maxContourArea")
+      .setPosition(xPos, yPos)
+      .setWidth(100)
+      .setRange(0,1)
+      .setValue(1)
+     ;
     
     xPos=xBase;
     yPos+=yOffset;

@@ -130,15 +130,14 @@ public class Drawing{
       int numContours = int(parameters.cp5.getController("numContours").getValue());
       for (int i=0; i < numContours; i++){
         float threshold = i*(1.0/numContours*100); 
-        threshold = map(threshold, 0, 100, parameters.cp5.getController("contourBrightnessRange").getArrayValue()[0], parameters.cp5.getController("contourBrightnessRange").getArrayValue()[1]);
+        threshold = map(threshold, 0, 100, parameters.cp5.getController("minContourBrightness").getValue(), parameters.cp5.getController("maxContourBrightness").getValue());
         threshold = map(threshold, 0, 1, -1, 255);
         ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), int(threshold));
         
         level.simplifyCountours(parameters.cp5.getController("contourSmoothingFactor").getValue());
         
-        float[] values = parameters.cp5.getController("contourSizeRange").getArrayValue();
-        level.removeContoursSmallerThan(values[0]);
-        level.removeContoursBiggerThan(values[1]);
+        level.removeContoursSmallerThan(parameters.cp5.getController("minContourArea").getValue());
+        level.removeContoursBiggerThan(parameters.cp5.getController("maxContourArea").getValue());
         levels.add(level);
       }
       println("image processing complete");
