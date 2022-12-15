@@ -19,7 +19,7 @@ public class Parameters {
     int xPos = xBase;
     int yPos = yBase;
     int yOffset = 25;
-    int xOffset = 130;
+    int xOffset = 180;
 
     cp5.addSlider("minFillSpacing")
       .setTriggerEvent(Slider.RELEASE)
@@ -30,7 +30,7 @@ public class Parameters {
       .setValue(1)
      ;
     
-    xPos+=2*xOffset;
+    xPos+=xOffset;
     
     cp5.addSlider("maxFillSpacing")
       .setTriggerEvent(Slider.RELEASE)
@@ -77,7 +77,7 @@ public class Parameters {
       .setValue(0)
      ;
     
-    xPos+=2*xOffset;
+    xPos+=xOffset;
     
     cp5.addSlider("maxContourBrightness")
       .setTriggerEvent(Slider.RELEASE)
@@ -100,7 +100,7 @@ public class Parameters {
       .setValue(.001)
      ;
     
-    xPos+=2*xOffset;
+    xPos+=xOffset;
     
     cp5.addSlider("maxContourArea")
       .setTriggerEvent(Slider.RELEASE)

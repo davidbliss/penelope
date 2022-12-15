@@ -13,7 +13,7 @@ public class Controls {
     int xPos = xBase;
     int yPos = yBase;
     int yOffset = 25;
-    int xOffset = 130;
+    int xOffset = 180;
     
     cp5.addButton("loadFromFile")
      .setLabel("load image")
@@ -31,7 +31,7 @@ public class Controls {
       .setRange(-255,255)
       .setValue(0)
       ;
-    xPos+=xOffset+50;
+    xPos+=xOffset;
     
     cp5.addToggle("runBrightness")
      .setLabel("brightness")
@@ -51,7 +51,7 @@ public class Controls {
       .setRange(0,3)
       .setValue(1)
       ;
-    xPos+=xOffset+50;
+    xPos+=xOffset;
     
     cp5.addToggle("runContrast")
      .setLabel("contrast")
@@ -86,7 +86,7 @@ public class Controls {
       .setRange(5,24)
       .setValue(5)
       ;
-    xPos+=xOffset+50;
+    xPos+=xOffset;
 
     cp5.addSlider("pageHeight")
       .setTriggerEvent(Slider.RELEASE)
@@ -96,7 +96,7 @@ public class Controls {
       .setRange(5,24)
       .setValue(8)
       ;
-    xPos+=xOffset+50;
+    xPos+=xOffset;
     
     cp5.addSlider("margin")
       .setTriggerEvent(Slider.RELEASE)
@@ -106,7 +106,7 @@ public class Controls {
       .setRange(0,2)
       .setValue(1)
       ;
-    xPos+=xOffset+50;
+    xPos+=xOffset;
     
     yPos+=yOffset;
     xPos=xBase;
