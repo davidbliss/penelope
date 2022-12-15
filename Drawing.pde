@@ -31,7 +31,6 @@ public class Drawing{
         
         RShape contours = levels.get(i).getContours();
         
-        
         float imageWidth = loadedImage.width * parameters.cp5.getController("sampleScale").getValue();
         float imageHeight = loadedImage.height * parameters.cp5.getController("sampleScale").getValue();
         
@@ -43,8 +42,11 @@ public class Drawing{
         int offsetX = ( canvas.width - int(imageWidth * scale) ) / 2;
         int offsetY = ( canvas.height - int(imageHeight * scale) ) / 2;
         
+        RShape diffedContours = null;
         if (i < numContours-1) {
-          RShape diffedContours = RG.diff(contours, levels.get(i+1).getContours());
+          // diffing before scaling is much quicker. TODO: what about filling before scaling?
+          println("about to diff");
+          diffedContours = RG.diff(contours, levels.get(i+1).getContours());
           diffedContours.scale(scale);
           diffedContours.translate(offsetX, offsetY);
         }
@@ -53,6 +55,7 @@ public class Drawing{
         contours.translate(offsetX, offsetY);
         
         // add contours to allCountours before diffing them
+        println("about to add to all contours");
         allContours.addChild(new RShape(contours));
         
         // show contours
@@ -61,7 +64,7 @@ public class Drawing{
         // fill contours (except the lightest one)
         if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
         
-          float fillSpacing = (1+i*((1.0/numContours-1)*10))* parameters.cp5.getController("fillSpacing").getValue(); 
+          float fillSpacing = 1 + i * (1.0/(numContours-1)) * 3 * parameters.cp5.getController("fillSpacing").getValue(); 
           println("about to fill",fillSpacing, canvas.height);
           RShape fill;
           if(centers.size()==0){
@@ -72,8 +75,10 @@ public class Drawing{
               fill.addChild(generateCircles(int(centers.get(j).x), int(centers.get(j).y), canvas.height, fillSpacing));
             }
           }
-          RShape clippedFill = geoUtils.clipShape(fill, contours);
-          canvas.addShape(canvasLayer, clippedFill);
+          if (diffedContours!=null) {
+            RShape clippedFill = geoUtils.clipShape(fill, diffedContours);
+            canvas.addShape(canvasLayer, clippedFill);
+          }
         }
       }
       
