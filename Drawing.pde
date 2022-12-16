@@ -1,6 +1,7 @@
 // Project specific drawing things go here
 
 // TODO: possible ideas for future:
+  // make a text generating script separately and add ability to load SVG into canvas
   // sketch_210920_ga_linedrawing - draw lines and perterb them based on the current region they are within -- maybe levergaing some what is in the offest line code
   // sketch_210920_ga_linedrawing - connecting nearby points of similar brightness
 
@@ -118,11 +119,25 @@ public class Drawing{
       }
     }
     
-    RShape message = RG.getText("Hello world!", "Phosphate-Solid.ttf", 54, LEFT);
-    //RShape message = RG.getText("Hello world!", "FreeSans.ttf", 54, LEFT);
+    RShape message = RG.getText("Happy New Year!", "Phosphate-Solid.ttf", 44, LEFT);
     message.polygonize();
-    message.translate(10,200);
+    message.scale(1,1.25);
+    
+    float mLower = canvas.height * .9;
+    float mUpper = canvas.height * .8;
+    
+    float mRight = canvas.width * .9;
+    float mLeft = mRight - message.getWidth();
+    
+    RShape curve = new RShape();
+    curve.addMoveTo(mLeft, mLower);
+    curve.addBezierTo(mLeft+message.getWidth()*.25, mLower, mRight-message.getWidth()*.25, mUpper, mRight, mUpper);
+    
+    message.translate(mLeft,200);
+    
     canvas.addShape(2,message);
+    canvas.addShape(2,curve);
+    
   }
   
   void processImage(){
@@ -143,6 +158,16 @@ public class Drawing{
         levels.add(level);
       }
       println("image processing complete");
+    }
+  }
+  
+  RPoint getXonCurve(RShape curve, float x){
+    RShape line = RG.getLine(x, 0, x, canvas.height);
+    RPoint[] intersections = curve.getIntersections(line);
+    if (intersections.length > 0){
+      return intersections[0];
+    } else {
+      return null;
     }
   }
   
