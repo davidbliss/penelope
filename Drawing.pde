@@ -21,6 +21,29 @@ public class Drawing{
 
   public void draw(PenelopeCanvas canvas){
     processImage();
+    
+    RShape message = RG.getText("Happy New Year!", "Phosphate-Solid.ttf", 44, LEFT);
+    message.polygonize();
+    message.scale(1,1.25);
+    float paddedWidth = message.getWidth() + 2;
+    
+    float mLower = canvas.height - canvas.margin - canvas.height * .06;
+    float mUpper = mLower - canvas.height * .20;
+    
+    float mRight = canvas.width * .96;
+    float mLeft = mRight - paddedWidth;
+    
+    RShape curve = new RShape();
+    curve.addMoveTo(mLeft, mLower);
+    curve.addBezierTo(mLeft+message.getWidth()*.25, mLower, mRight-message.getWidth()*.25, mUpper, mRight, mUpper);
+    
+    message.translate(mLeft,0);
+    for (RPoint point: message.getPoints()){
+      point.translate(0, getYonCurve(curve, point.x));
+    }
+    
+    canvas.addShape(2,message);
+    
     if(levels != null){
       int numContours = int(parameters.cp5.getController("numContours").getValue());
 
@@ -57,7 +80,10 @@ public class Drawing{
         allContours.addChild(new RShape(contours));
         
         // show contours
-        if(parameters.cp5.getController("showContours").getValue()==1.0) canvas.addShape(canvasLayer, contours);
+        if(parameters.cp5.getController("showContours").getValue()==1.0) {
+          contours = geoUtils.clipShape(contours, message, false);
+          canvas.addShape(canvasLayer, contours);
+        }
         
         // fill contours (except the lightest one)
         if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
@@ -74,6 +100,8 @@ public class Drawing{
           }
           if (diffedContours!=null) {
             RShape clippedFill = geoUtils.clipShape(fill, diffedContours);
+            
+            clippedFill = geoUtils.clipShape(clippedFill, message, false);
             canvas.addShape(canvasLayer, clippedFill);
           }
         }
@@ -98,6 +126,7 @@ public class Drawing{
         keyContours = geoUtils.mergeLines(keyContours, mergeDistance);
         keyContours = geoUtils.filterSmallArea(keyContours, minArea); 
         
+        keyContours = geoUtils.clipShape(keyContours, message, false);
         canvas.addShape(canvasLayer, keyContours);
       }
       
@@ -118,26 +147,6 @@ public class Drawing{
         }
       }
     }
-    
-    RShape message = RG.getText("Happy New Year!", "Phosphate-Solid.ttf", 44, LEFT);
-    message.polygonize();
-    message.scale(1,1.25);
-    
-    float mLower = canvas.height * .9;
-    float mUpper = canvas.height * .8;
-    
-    float mRight = canvas.width * .9;
-    float mLeft = mRight - message.getWidth();
-    
-    RShape curve = new RShape();
-    curve.addMoveTo(mLeft, mLower);
-    curve.addBezierTo(mLeft+message.getWidth()*.25, mLower, mRight-message.getWidth()*.25, mUpper, mRight, mUpper);
-    
-    message.translate(mLeft,200);
-    
-    canvas.addShape(2,message);
-    canvas.addShape(2,curve);
-    
   }
   
   void processImage(){
@@ -148,7 +157,10 @@ public class Drawing{
       for (int i=0; i < numContours; i++){
         float threshold = i*(1.0/numContours*100); 
         threshold = map(threshold, 0, 100, parameters.cp5.getController("minContourBrightness").getValue(), parameters.cp5.getController("maxContourBrightness").getValue());
-        threshold = map(threshold, 0, 1, -1, 255);
+        threshold = map(threshold, 0, 1, 0, 255);
+        
+        if(i==0) threshold = -1; // always make the first layer -1 to include black otherwise it drops out and fills are wrong
+        
         ContourLevel level = new ContourLevel(applet, loadedImage.copy(), parameters.cp5.getController("sampleScale").getValue(), int(threshold));
         
         level.simplifyCountours(parameters.cp5.getController("contourSmoothingFactor").getValue());
@@ -161,13 +173,13 @@ public class Drawing{
     }
   }
   
-  RPoint getXonCurve(RShape curve, float x){
+  float getYonCurve(RShape curve, float x){
     RShape line = RG.getLine(x, 0, x, canvas.height);
     RPoint[] intersections = curve.getIntersections(line);
-    if (intersections.length > 0){
-      return intersections[0];
+    if (intersections != null && intersections.length > 0){
+      return intersections[0].y;
     } else {
-      return null;
+      return 0;
     }
   }
   

@@ -123,6 +123,14 @@ public class Controls {
       .setPosition(xPos, yPos)
       .setSize(100,20)
       ;
+    yPos+=yOffset;
+
+    cp5.addButton("loadSettingsFile")
+      .setLabel("load settings")
+      .setPosition(xPos, yPos)
+      .setSize(100,20)
+      ;
+    
     
   }
 }
@@ -140,9 +148,6 @@ void randomizeParameters(){
 void regenerate(){  
 }
 
-
-
-
 void loadFromFile(){
   selectInput("Select a file to process:", "loadImageFromDisk");
 }
@@ -155,5 +160,42 @@ void loadImageFromDisk(File selection){
     println("loading image:", path);
     loadedImage = loadImage(path);
     drawRequested = true;
+  }
+}
+
+void loadSettingsFile(){
+  selectInput("Select a settings file to import:", "loadSettings");
+}
+
+void loadSettings(File selection){
+  if (selection == null) {
+    println("dialog closed or canceled.");
+  } else {
+    String path = selection.getAbsolutePath();
+    println("loading settings:", path);
+    String[] lines = loadStrings(path);
+    for (int i = 0 ; i < lines.length; i++) {
+      int comIndex = lines[i].indexOf(",");
+      int colIndex = lines[i].indexOf(":"); 
+      
+      if(comIndex >0){
+        String control = lines[i].substring(comIndex+2,colIndex);
+        String value = lines[i].substring(colIndex+2);
+        println(control, value);
+        
+        
+        if(controls.cp5.getController(control) != null) {
+          parameters.cp5.getController(control).setValue(float(value));
+        } else {
+          println("parameter", control, "not found");
+        }
+        println("|"+control+"|");
+        println(parameters);
+        println(parameters.cp5);
+        println(controls.cp5.getController(control));
+        println(parameters.cp5.getController("sampleScale"));
+        println(parameters.cp5.getController("sampleScale").getValue());
+      }
+    }
   }
 }
