@@ -67,7 +67,7 @@ public class Drawing{
         
         RShape diffedContours = null;
         if (i < numContours-1) {
-          // diffing before scaling is much quicker. TODO: what about filling before scaling?
+          // diffing before scaling is much quicker.
           diffedContours = RG.diff(contours, levels.get(i+1).getContours());
           diffedContours.scale(scale);
           diffedContours.translate(offsetX, offsetY);
@@ -87,8 +87,7 @@ public class Drawing{
         
         // fill contours (except the lightest one)
         if(parameters.cp5.getController("showFill").getValue()==1.0 && i < numContours - 1){
-        
-          float fillSpacing = map(i * (1.0/(numContours-1)), 0.0, 1.0, parameters.cp5.getController("minFillSpacing").getValue(),parameters.cp5.getController("maxFillSpacing").getValue()); 
+          float fillSpacing = map(i * (1.0/(numContours-1)), 0.0, 1.0, int(parameters.cp5.getController("minFillSpacing").getValue()),int(parameters.cp5.getController("maxFillSpacing").getValue())); 
           RShape fill;
           if(centers.size()==0){
             fill = generateCircles(canvas.width/2, canvas.height/2, canvas.height, fillSpacing);
