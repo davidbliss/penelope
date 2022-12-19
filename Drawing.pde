@@ -137,7 +137,8 @@ public class Drawing{
           PGraphics sourceImage = createGraphics(levels.get(i).getThresholdImage().width,levels.get(i).getThresholdImage().height);
           sourceImage.beginDraw();
           sourceImage.noStroke();
-          sourceImage.fill(i*(1.0/numContours*255));
+          //sourceImage.fill(i*(1.0/numContours*255));
+          sourceImage.fill(random(255),random(255),random(255));
           sourceImage.rect(0,0,sourceImage.width,sourceImage.height);
           sourceImage.endDraw();
           
