@@ -49,7 +49,7 @@ public class Parameters {
       .setLabel("number of contours")
       .setPosition(xPos, yPos)
       .setWidth(100)
-      .setRange(2,10)
+      .setRange(2,20)
       .setValue(4)
      ;
     
