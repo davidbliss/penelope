@@ -803,7 +803,7 @@ public class GeoUtils {
     RPoint[][] allPathPoints = shape.getPointsInPaths();
     if(allPathPoints!=null) {
       for(RPoint[] points : allPathPoints) {
-        if(points.length>1) {
+        if(points != null && points.length>1) {
           ArrayList<RPoint> pointArray = new ArrayList<RPoint>();
           pointArray.add(new RPoint(points[0]));
           for (int i=1; i<points.length; i++) {
