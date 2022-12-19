@@ -181,20 +181,12 @@ void loadSettings(File selection){
       if(comIndex >0){
         String control = lines[i].substring(comIndex+2,colIndex);
         String value = lines[i].substring(colIndex+2);
-        println(control, value);
         
-        
-        if(controls.cp5.getController(control) != null) {
+        if(parameters.cp5.getController(control) != null) {
           parameters.cp5.getController(control).setValue(float(value));
         } else {
           println("parameter", control, "not found");
         }
-        println("|"+control+"|");
-        println(parameters);
-        println(parameters.cp5);
-        println(controls.cp5.getController(control));
-        println(parameters.cp5.getController("sampleScale"));
-        println(parameters.cp5.getController("sampleScale").getValue());
       }
     }
   }
