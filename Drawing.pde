@@ -101,6 +101,9 @@ public class Drawing{
             RShape clippedFill = geoUtils.clipShape(fill, diffedContours);
             
             clippedFill = geoUtils.clipShape(clippedFill, message, false);
+            clippedFill = geoUtils.mergeLines(clippedFill, 1.75);
+            clippedFill = geoUtils.filterShortLines(clippedFill, 2);
+            
             canvas.addShape(canvasLayer, clippedFill);
           }
         }

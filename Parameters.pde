@@ -160,6 +160,14 @@ public class Parameters {
       .setSize(100,20)
       ;
       
+    xPos += xOffset;
+    
+    cp5.addButton("clearCenter")
+      .setLabel("clear center")
+      .setPosition(xPos, yPos)
+      .setSize(100,20)
+      ;
+      
     xPos=xBase;
     yPos+=yOffset;
     
@@ -237,6 +245,9 @@ public class Parameters {
 Boolean waitingForCenter=false;
 public void placeCenter(ControlEvent e){
   waitingForCenter = true;
+}
+public void clearCenter(ControlEvent e){
+  centers = new ArrayList<RPoint>();
 }
 void mousePressed() {
   if (waitingForCenter) {

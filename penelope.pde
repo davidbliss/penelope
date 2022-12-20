@@ -84,7 +84,7 @@ void updateDimensions(){
 
 public void controlEvent(ControlEvent theEvent){
   // triggered by controls and parameters
-  if(canvas != null && theEvent.getName() != "loadFromFile" && theEvent.getName() != "saveSnapshot" && theEvent.getName() != "placeCenter"){
+  if(canvas != null && theEvent.getName() != "loadFromFile" && theEvent.getName() != "saveSnapshot" && theEvent.getName() != "placeCenter" && theEvent.getName() != "clearCenter"){
     drawRequested = true;
   }
 }
